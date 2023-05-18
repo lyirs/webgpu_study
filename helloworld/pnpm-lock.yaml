@@ -1,5 +1,13 @@
 lockfileVersion: '6.0'
 
+dependencies:
+  '@webgpu/types':
+    specifier: ^0.1.32
+    version: 0.1.32
+  typescript:
+    specifier: ^5.0.4
+    version: 5.0.4
+
 devDependencies:
   vite:
     specifier: ^4.3.2
@@ -205,6 +213,10 @@ packages:
     dev: true
     optional: true
 
+  /@webgpu/types@0.1.32:
+    resolution: {integrity: sha512-H6JRAvRonWxqREjxXMZgQmdgIFPe6mykLgdrHY7EQE7YihMKd/SjtSGilUmMKECVdUMg2IQB9vzaXDiTj1AxZg==}
+    dev: false
+
   /esbuild@0.17.19:
     resolution: {integrity: sha512-XQ0jAPFkK/u3LcVRcvVHQcTIqD6E2H1fvZMA5dQPSOWb3suUbWbfbRf94pjc0bNzRYLfIrDRQXr7X+LHIm5oHw==}
     engines: {node: '>=12'}
@@ -274,6 +286,12 @@ packages:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /typescript@5.0.4:
+    resolution: {integrity: sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==}
+    engines: {node: '>=12.20'}
+    hasBin: true
+    dev: false
 
   /vite@4.3.2:
     resolution: {integrity: sha512-9R53Mf+TBoXCYejcL+qFbZde+eZveQLDYd9XgULILLC1a5ZwPaqgmdVpL8/uvw2BM/1TzetWjglwm+3RO+xTyw==}
