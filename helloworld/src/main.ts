@@ -70,8 +70,9 @@ new Float32Array(verticesBuffer.getMappedRange()).set(cubeVertexArray); // 复�
 verticesBuffer.unmap(); // 解除显存对象的映射，稍后它就能在 GPU 中进行复制操作
 
 // 着色器
-import vertWGSL from "./shader/vert.wgsl?raw";
-import fragWGSL from "./shader/frag.wgsl?raw";
+import vertWGSL from "./shader/cubeVert.wgsl?raw";
+import fragWGSL from "./shader/cubeFrag.wgsl?raw";
+import { mat4, vec3 } from "gl-matrix";
 // 创建渲染管线
 const pipline = device.createRenderPipeline({
   // 布局
@@ -82,6 +83,23 @@ const pipline = device.createRenderPipeline({
       code: vertWGSL,
     }),
     entryPoint: "main",
+    buffers: [
+      {
+        arrayStride: cubeVertexSize,
+        attributes: [
+          {
+            shaderLocation: 0,
+            offset: cubePositionOffset,
+            format: "float32x4",
+          },
+          {
+            shaderLocation: 1,
+            offset: cubeUVOffset,
+            format: "float32x2",
+          },
+        ],
+      },
+    ],
   },
   // 片元着色器
   fragment: {
@@ -104,7 +122,53 @@ const pipline = device.createRenderPipeline({
   multisample: {
     count: 4,
   },
+  depthStencil: {
+    depthWriteEnabled: true,
+    depthCompare: "less",
+    format: "depth24plus",
+  },
 });
+
+const depthTexture = device.createTexture({
+  sampleCount: 4,
+  size: [canvas.width, canvas.height],
+  format: "depth24plus",
+  usage: GPUTextureUsage.RENDER_ATTACHMENT,
+});
+
+// UBO
+const uniformBufferSize = 4 * 16;
+const uniformBuffer = device.createBuffer({
+  size: uniformBufferSize,
+  usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+});
+const uniformBindGroup = device.createBindGroup({
+  layout: pipline.getBindGroupLayout(0),
+  entries: [
+    {
+      binding: 0,
+      resource: {
+        buffer: uniformBuffer,
+      },
+    },
+  ],
+});
+
+const aspect = canvas.width / canvas.height; // 相机宽高比例
+const projectionMatrix = mat4.create();
+mat4.perspective(projectionMatrix, (45 * Math.PI) / 180, aspect, 0.1, 100.0);
+
+function getTransformationMatrix() {
+  const viewMatrix = mat4.create();
+  mat4.translate(viewMatrix, viewMatrix, vec3.fromValues(0, 0, -8));
+
+  const now = Date.now() / 1000;
+
+  mat4.rotate(viewMatrix, viewMatrix, now, vec3.fromValues(1, 1, 1));
+  const modelViewProjectionMatrix = mat4.create() as Float32Array;
+  mat4.multiply(modelViewProjectionMatrix, projectionMatrix, viewMatrix);
+  return modelViewProjectionMatrix;
+}
 
 const texture = device.createTexture({
   size: [canvas.width, canvas.height],
@@ -117,6 +181,14 @@ const view = texture.createView();
 
 // 渲染
 const render = () => {
+  const modelViewProjectionMatrix = getTransformationMatrix();
+  device.queue.writeBuffer(
+    uniformBuffer,
+    0,
+    modelViewProjectionMatrix.buffer,
+    modelViewProjectionMatrix.byteOffset,
+    modelViewProjectionMatrix.byteLength
+  );
   // 开始命令编码
   const commandEncoder = device.createCommandEncoder();
 
@@ -140,11 +212,21 @@ const render = () => {
         storeOp: "store",
       },
     ],
+    depthStencilAttachment: {
+      view: depthTexture.createView(),
+      depthClearValue: 1.0,
+      depthLoadOp: "clear",
+      depthStoreOp: "store",
+    },
   });
   // 设置渲染管线
   renderPass.setPipeline(pipline);
-  // 绘制三角形
-  renderPass.draw(3, 1, 0, 0);
+  // 设置绑定组
+  renderPass.setBindGroup(0, uniformBindGroup);
+  // 设置顶点缓冲区
+  renderPass.setVertexBuffer(0, verticesBuffer);
+  // 绘制
+  renderPass.draw(cubeVertexCount, 1, 0, 0);
   // 结束渲染通道
   renderPass.end();
   // 提交命令
