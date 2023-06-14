@@ -24,9 +24,54 @@ context.configure({
   // 不透明度
   alphaMode: "opaque",
 });
+
+// 立方体数据
+const cubeVertexArray = new Float32Array([
+  // float4 position, float4 color, float2 uv,
+  1, -1, 1, 1, 1, 0, 1, 1, 1, 1, -1, -1, 1, 1, 0, 0, 1, 1, 0, 1, -1, -1, -1, 1,
+  0, 0, 0, 1, 0, 0, 1, -1, -1, 1, 1, 0, 0, 1, 1, 0, 1, -1, 1, 1, 1, 0, 1, 1, 1,
+  1, -1, -1, -1, 1, 0, 0, 0, 1, 0, 0,
+
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 0, 1, 1, 0, 1, 1, -1, -1, 1, 1,
+  0, 0, 1, 0, 0, 1, 1, -1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  -1, -1, 1, 1, 0, 0, 1, 0, 0,
+
+  -1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, -1, 1, 1,
+  1, 0, 1, 0, 0, -1, 1, -1, 1, 0, 1, 0, 1, 1, 0, -1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+  1, 1, -1, 1, 1, 1, 0, 1, 0, 0,
+
+  -1, -1, 1, 1, 0, 0, 1, 1, 1, 1, -1, 1, 1, 1, 0, 1, 1, 1, 0, 1, -1, 1, -1, 1,
+  0, 1, 0, 1, 0, 0, -1, -1, -1, 1, 0, 0, 0, 1, 1, 0, -1, -1, 1, 1, 0, 0, 1, 1,
+  1, 1, -1, 1, -1, 1, 0, 1, 0, 1, 0, 0,
+
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 0, 1, 1, 1, 0, 1, -1, -1, 1, 1, 0,
+  0, 1, 1, 0, 0, -1, -1, 1, 1, 0, 0, 1, 1, 0, 0, 1, -1, 1, 1, 1, 0, 1, 1, 1, 0,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+
+  1, -1, -1, 1, 1, 0, 0, 1, 1, 1, -1, -1, -1, 1, 0, 0, 0, 1, 0, 1, -1, 1, -1, 1,
+  0, 1, 0, 1, 0, 0, 1, 1, -1, 1, 1, 1, 0, 1, 1, 0, 1, -1, -1, 1, 1, 0, 0, 1, 1,
+  1, -1, 1, -1, 1, 0, 1, 0, 1, 0, 0,
+]);
+
+const cubeVertexSize = 10 * 4; // 10 乘以 float 的字节数 4
+const cubePositionOffset = 0;
+const cubeColorOffset = 4 * 4; // 颜色属性紧随位置数据之后, 偏移量是 4 * 4
+const cubeUVOffset = 8 * 4;
+const cubeVertexCount = 36;
+
+// 创建顶点缓冲区 VBO
+// 获取一块状态为映射了的显存，以及一个对应的 arrayBuffer 对象来写数据
+const verticesBuffer = device.createBuffer({
+  size: cubeVertexArray.byteLength, // 指定了需要申请多大的显存，单位是 byte
+  usage: GPUBufferUsage.VERTEX,
+  mappedAtCreation: true, // 被设置为 true，则 size 必须是 4 的倍数，创建时立刻映射，让 CPU 端能读写数据
+});
+new Float32Array(verticesBuffer.getMappedRange()).set(cubeVertexArray); // 复制目标/复制源类型的 GPUBuffer ,通过 TypedArray 向 ArrayBuffer 写入数据
+verticesBuffer.unmap(); // 解除显存对象的映射，稍后它就能在 GPU 中进行复制操作
+
 // 着色器
-import vertWGSL from "./vert.wgsl?raw";
-import fragWGSL from "./frag.wgsl?raw";
+import vertWGSL from "./shader/vert.wgsl?raw";
+import fragWGSL from "./shader/frag.wgsl?raw";
 // 创建渲染管线
 const pipline = device.createRenderPipeline({
   // 布局
