@@ -18,5 +18,4 @@
     "types": ["vite/client", "@webgpu/types"]
   },
   "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
 }

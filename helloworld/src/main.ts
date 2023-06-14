@@ -55,7 +55,21 @@ const pipline = device.createRenderPipeline({
   primitive: {
     topology: "triangle-list",
   },
+  // 多重采样
+  multisample: {
+    count: 4,
+  },
 });
+
+const texture = device.createTexture({
+  size: [canvas.width, canvas.height],
+  sampleCount: 4, // 4倍抗锯齿
+  format: format,
+  usage: GPUTextureUsage.RENDER_ATTACHMENT, // 纹理用途
+});
+
+const view = texture.createView();
+
 // 渲染
 const render = () => {
   // 开始命令编码
@@ -67,7 +81,8 @@ const render = () => {
     // 颜色附件
     colorAttachments: [
       {
-        view: context.getCurrentTexture().createView(),
+        view: view,
+        resolveTarget: context.getCurrentTexture().createView(),
         clearValue: {
           r: 0.0,
           g: 0.0,
