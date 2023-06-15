@@ -142,17 +142,6 @@ const uniformBuffer = device.createBuffer({
   size: uniformBufferSize,
   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 });
-const uniformBindGroup = device.createBindGroup({
-  layout: pipline.getBindGroupLayout(0),
-  entries: [
-    {
-      binding: 0,
-      resource: {
-        buffer: uniformBuffer,
-      },
-    },
-  ],
-});
 
 const aspect = canvas.width / canvas.height; // 相机宽高比例
 const projectionMatrix = mat4.create();
@@ -178,6 +167,52 @@ const texture = device.createTexture({
 });
 
 const view = texture.createView();
+
+// 图片加载
+const image = new Image();
+image.src = "/zs.png";
+await image.decode();
+const imageBitmap = await createImageBitmap(image);
+
+const cubeTexture = device.createTexture({
+  size: [imageBitmap.width, imageBitmap.height, 1],
+  format: "rgba8unorm",
+  usage:
+    GPUTextureUsage.TEXTURE_BINDING |
+    GPUTextureUsage.COPY_DST |
+    GPUTextureUsage.RENDER_ATTACHMENT,
+});
+
+device.queue.copyExternalImageToTexture(
+  { source: imageBitmap },
+  { texture: cubeTexture },
+  [imageBitmap.width, imageBitmap.height]
+);
+
+const sampler = device.createSampler({
+  magFilter: "linear",
+  minFilter: "linear",
+});
+
+const uniformBindGroup = device.createBindGroup({
+  layout: pipline.getBindGroupLayout(0),
+  entries: [
+    {
+      binding: 0,
+      resource: {
+        buffer: uniformBuffer,
+      },
+    },
+    {
+      binding: 1,
+      resource: sampler,
+    },
+    {
+      binding: 2,
+      resource: cubeTexture.createView(),
+    },
+  ],
+});
 
 // 渲染
 const render = () => {
