@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
 import WebGPU from "three/examples/jsm/capabilities/WebGPU.js";
+import * as Nodes from "three/examples/jsm/nodes/Nodes.js";
 
 if (WebGPU.isAvailable() === false) {
   alert("WebGpu is not available");
@@ -32,18 +33,66 @@ document.body.appendChild(renderer.domElement);
 // 创建相机控制器
 const controls = new OrbitControls(camera, renderer.domElement);
 
-// 创建立方体
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
-
 // 渲染场景
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
 animate();
+
+// 全景环境贴图
+const textureLoader = new THREE.TextureLoader();
+const envMap = textureLoader.load("texture/scene.jpg");
+envMap.mapping = THREE.EquirectangularReflectionMapping;
+envMap.flipY = false;
+scene.background = envMap;
+scene.environment = envMap;
+
+// 天空球
+const sphere = new THREE.SphereGeometry(50, 64, 64);
+sphere.scale(1, 1, -1);
+envMap.flipY = true;
+const skyboxMaterial = new THREE.MeshBasicMaterial({
+  map: envMap,
+});
+const skybox = new THREE.Mesh(sphere, skyboxMaterial);
+skybox.position.set(0, 10, 0);
+scene.add(skybox);
+
+// 地面材质纹理
+const uvNode = Nodes.uv().mul(5);
+const fabricTexture = textureLoader.load(
+  "texture/fabric/FabricPlainWhiteBlackout009_COL_2K.jpg"
+);
+fabricTexture.wrapS = fabricTexture.wrapT = THREE.RepeatWrapping;
+// 地面法向贴图
+const fabricNormalMap = textureLoader.load(
+  "texture/fabric/FabricPlainWhiteBlackout009_NRM_2K.png"
+);
+fabricNormalMap.wrapS = fabricNormalMap.wrapT = THREE.RepeatWrapping;
+// 地面高光地图
+const fabricSheen = textureLoader.load(
+  "texture/fabric/FabricPlainWhiteBlackout009_GLOSS_2K.jpg"
+);
+fabricSheen.wrapS = fabricSheen.wrapT = THREE.RepeatWrapping;
+// 地面
+const planeGeometry = new THREE.CircleGeometry(40, 64);
+const planeMaterial = new Nodes.MeshPhysicalNodeMaterial({
+  side: THREE.DoubleSide,
+});
+planeMaterial.colorNode = Nodes.texture(fabricTexture, uvNode);
+planeMaterial.normalNode = Nodes.texture(fabricNormalMap, uvNode);
+planeMaterial.sheenNode = Nodes.texture(fabricSheen, uvNode);
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+plane.rotation.x = -Math.PI / 2;
+scene.add(plane);
+
+// 创建光源
+const spotLight = new THREE.SpotLight(0xffffff, 100);
+spotLight.position.set(0, 10, 0);
+spotLight.angle = Math.PI / 8;
+spotLight.penumbra = 0.3;
+scene.add(spotLight);
 </script>
 
 <template>
