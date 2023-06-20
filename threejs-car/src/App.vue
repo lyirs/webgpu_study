@@ -110,6 +110,35 @@ scene.add(spotLight);
 const loader = new GLTFLoader();
 loader.load("model/zeekr.glb", (gltf) => {
   const model = gltf.scene;
+  model.traverse(function (child: any) {
+    if (child.isMesh) {
+      if (child.name === "车顶窗") {
+        child.material.transparent = true;
+      }
+      if (child.name === "挡风玻璃") {
+        child.material.transparent = true;
+        child.material.opacity = 0.1;
+        child.material.thickness = 2;
+      }
+      if (child.name === "后右车门窗") {
+        child.material.color = new THREE.Color(0x333333);
+        child.material.transparent = true;
+        child.material.opacity = 0.8;
+        child.material.thickness = 2;
+      }
+      if (child.name == "车灯罩") {
+        child.material.transparent = true;
+        child.material.opacity = 0.5;
+        child.material.thickness = 2;
+      }
+      if (child.name == "机盖2") {
+        child.material.color = new THREE.Color(0xffccff);
+        child.material.roughness = 0.3;
+        child.material.clearcoat = 1;
+        child.material.clearcoatRoughness = 0;
+      }
+    }
+  });
   scene.add(model);
 });
 </script>
