@@ -4,6 +4,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
 import WebGPU from "three/examples/jsm/capabilities/WebGPU.js";
 import * as Nodes from "three/examples/jsm/nodes/Nodes.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { color } from "three/nodes";
 
 if (WebGPU.isAvailable() === false) {
   alert("WebGpu is not available");
@@ -70,17 +72,25 @@ const fabricNormalMap = textureLoader.load(
   "texture/fabric/FabricPlainWhiteBlackout009_NRM_2K.png"
 );
 fabricNormalMap.wrapS = fabricNormalMap.wrapT = THREE.RepeatWrapping;
-// 地面高光地图
+// 地面高光贴图
 const fabricSheen = textureLoader.load(
   "texture/fabric/FabricPlainWhiteBlackout009_GLOSS_2K.jpg"
 );
 fabricSheen.wrapS = fabricSheen.wrapT = THREE.RepeatWrapping;
+// 模型阴影贴图
+const aoTexture = textureLoader.load("texture/ferrari_ao.png");
 // 地面
 const planeGeometry = new THREE.CircleGeometry(40, 64);
 const planeMaterial = new Nodes.MeshPhysicalNodeMaterial({
   side: THREE.DoubleSide,
 });
-planeMaterial.colorNode = Nodes.texture(fabricTexture, uvNode);
+
+planeMaterial.colorNode = Nodes.texture(fabricTexture, uvNode).mul(
+  Nodes.texture(
+    aoTexture,
+    Nodes.uv().mul(Nodes.vec2(30, 14)).add(Nodes.vec2(-14.525, -6.52))
+  )
+);
 planeMaterial.normalNode = Nodes.texture(fabricNormalMap, uvNode);
 planeMaterial.sheenNode = Nodes.texture(fabricSheen, uvNode);
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -88,11 +98,20 @@ plane.rotation.x = -Math.PI / 2;
 scene.add(plane);
 
 // 创建光源
+const ambient = new THREE.AmbientLight(0xffffff);
+scene.add(ambient);
 const spotLight = new THREE.SpotLight(0xffffff, 100);
 spotLight.position.set(0, 10, 0);
 spotLight.angle = Math.PI / 8;
 spotLight.penumbra = 0.3;
 scene.add(spotLight);
+
+// 加载模型
+const loader = new GLTFLoader();
+loader.load("model/zeekr.glb", (gltf) => {
+  const model = gltf.scene;
+  scene.add(model);
+});
 </script>
 
 <template>
