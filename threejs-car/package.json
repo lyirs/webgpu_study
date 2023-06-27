@@ -11,6 +11,7 @@
   "dependencies": {
     "@types/three": "^0.152.1",
     "@webgpu/types": "^0.1.33",
+    "gsap": "^3.12.1",
     "three": "^0.153.0",
     "vue": "^3.2.47"
   },

@@ -7,6 +7,9 @@ dependencies:
   '@webgpu/types':
     specifier: ^0.1.33
     version: 0.1.33
+  gsap:
+    specifier: ^3.12.1
+    version: 3.12.1
   three:
     specifier: ^0.153.0
     version: 0.153.0
@@ -600,6 +603,10 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /gsap@3.12.1:
+    resolution: {integrity: sha512-FXtb2YbBE9l8I9Pl5DFLpCMedaiMPztRlr0Ln0CMSnJn+pbTaeKlzgth8cLNPc7PzNwIZe+SEQiBBAWaBKJdVA==}
+    dev: false
 
   /he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}

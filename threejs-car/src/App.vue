@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 // @ts-ignore
@@ -9,6 +10,7 @@ import * as Nodes from "three/examples/jsm/nodes/Nodes.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 // @ts-ignore
 import { color } from "three/nodes";
+import gsap from "gsap";
 
 if (WebGPU.isAvailable() === false) {
   alert("WebGpu is not available");
@@ -36,11 +38,12 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 // 添加渲染器到DOM
 document.body.appendChild(renderer.domElement);
 // 创建相机控制器
-// @ts-ignore
 const controls = new OrbitControls(camera, renderer.domElement);
-
+controls.target.set(0.4, 1.2, 0);
+controls.enableDamping = true;
 // 渲染场景
 function animate() {
+  controls.update();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
@@ -117,6 +120,7 @@ scene.add(spotLight);
 const video = document.querySelector("#video") as HTMLVideoElement;
 
 // 加载模型
+let carMaterial: { color: THREE.Color } = null;
 const loader = new GLTFLoader();
 loader.load("model/zeekr.glb", (gltf) => {
   const model = gltf.scene;
@@ -146,6 +150,7 @@ loader.load("model/zeekr.glb", (gltf) => {
         child.material.roughness = 0.3;
         child.material.clearcoat = 1;
         child.material.clearcoatRoughness = 0;
+        carMaterial = child.material;
       }
       if (child.material && child.material.name == "视频纹理") {
         video.play();
@@ -184,6 +189,57 @@ scene.add(pointLight3);
 const pointLight4 = new THREE.PointLight(0x00ffff, 1);
 pointLight4.position.set(0, 4, -4);
 scene.add(pointLight4);
+
+// 监听交互事件
+let timeline = gsap.timeline();
+const enterCar = () => {
+  timeline.to(camera.position, {
+    z: -0.1,
+    x: 0.43,
+    y: 1.24,
+    duration: 1,
+    ease: "power2.inOut",
+  });
+};
+
+const outCar = () => {
+  timeline.to(camera.position, {
+    z: 6,
+    x: 0,
+    y: 2,
+    duration: 1,
+    ease: "power2.inOut",
+  });
+};
+
+// 设置颜色选项
+const colors = [
+  {
+    name: "红色",
+    color: "rgb(255,0,0)",
+  },
+  {
+    name: "蓝色",
+    color: "rgb(0,0,255)",
+  },
+  {
+    name: "紫色",
+    color: "rgb(255,0,255)",
+  },
+  {
+    name: "白色",
+    color: "rgb(255,255,255)",
+  },
+];
+
+const isColor = ref(false);
+const toggleColor = () => {
+  isColor.value = !isColor.value;
+};
+
+const changeColor = (color: THREE.ColorRepresentation | undefined) => {
+  carMaterial.color = new THREE.Color(color);
+};
 </script>
 
 <template>
@@ -218,4 +274,63 @@ scene.add(pointLight4);
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.tab {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  z-index: 100;
+  color: #fff;
+}
+.btn {
+  width: 33.33%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon1 {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-size: 100% 100%;
+  background-image: url("assets/img/car3.png");
+}
+.btn-icon2 {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-size: 100% 100%;
+  background-image: url("assets/img/car.png");
+}
+.btn-icon3 {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-size: 100% 100%;
+  background-image: url("assets/img/car2.png");
+}
+.colors {
+  width: 100vw;
+  height: 100px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  position: fixed;
+  left: 0;
+  bottom: 100px;
+  z-index: 100;
+}
+.color {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 5px solid rgba(255, 255, 255, 0.5);
+}
+</style>
