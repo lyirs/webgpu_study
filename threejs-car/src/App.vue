@@ -120,7 +120,8 @@ scene.add(spotLight);
 const video = document.querySelector("#video") as HTMLVideoElement;
 
 // 加载模型
-let carMaterial: { color: THREE.Color } = null;
+let carMaterial: any = null;
+let leftDoor: { rotation: gsap.TweenTarget; }, rightDoor: { rotation: gsap.TweenTarget; };
 const loader = new GLTFLoader();
 loader.load("model/zeekr.glb", (gltf) => {
   const model = gltf.scene;
@@ -167,6 +168,12 @@ loader.load("model/zeekr.glb", (gltf) => {
         //     emissiveMap: videoTexture,
         //   });
         // });
+      }
+      if (child.name === "前左车门p") {
+        leftDoor = child;
+      }
+      if (child.name === "前右车门p") {
+        rightDoor = child;
       }
     }
   });
@@ -239,6 +246,38 @@ const toggleColor = () => {
 
 const changeColor = (color: THREE.ColorRepresentation | undefined) => {
   carMaterial.color = new THREE.Color(color);
+};
+
+// 开车门
+let isOpen = false;
+let timeline1 = gsap.timeline();
+let timeline2 = gsap.timeline();
+const openDoor = () => {
+  if (isOpen) {
+    isOpen = false;
+    timeline1.to(leftDoor.rotation, {
+      y: 0,
+      duration: 1,
+      ease: "power2.inOut",
+    });
+    timeline2.to(rightDoor.rotation, {
+      y: 0,
+      duration: 1,
+      ease: "power2.inOut",
+    });
+  } else {
+    isOpen = true;
+    timeline1.to(leftDoor.rotation, {
+      y: -Math.PI / 4,
+      duration: 1,
+      ease: "power2.inOut",
+    });
+    timeline2.to(rightDoor.rotation, {
+      y: Math.PI / 4,
+      duration: 1,
+      ease: "power2.inOut",
+    });
+  }
 };
 </script>
 
