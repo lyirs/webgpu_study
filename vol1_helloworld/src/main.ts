@@ -53,6 +53,7 @@ const cubeVertexArray = new Float32Array([
   1, -1, 1, -1, 1, 0, 1, 0, 1, 0, 0,
 ]);
 
+// 为获得数据队列中下一个属性值（比如位置向量的下个 4 维分量）我们必须向右移动 10 个 float ，其中 4 个是位置值，另外 4 个是颜色值，还有 2 个是 uv 值，那么步长就是 10 乘以 float 的字节数 4（= 40 字节）
 const cubeVertexSize = 10 * 4; // 10 乘以 float 的字节数 4
 const cubePositionOffset = 0;
 const cubeColorOffset = 4 * 4; // 颜色属性紧随位置数据之后, 偏移量是 4 * 4
@@ -68,6 +69,12 @@ const verticesBuffer = device.createBuffer({
 });
 new Float32Array(verticesBuffer.getMappedRange()).set(cubeVertexArray); // 复制目标/复制源类型的 GPUBuffer ,通过 TypedArray 向 ArrayBuffer 写入数据
 verticesBuffer.unmap(); // 解除显存对象的映射，稍后它就能在 GPU 中进行复制操作
+/**
+ * 应用程序可以请求映射一个 GPUBuffer，这样它们就可以通过代表 GPUBuffer 分配的部分的 arraybuffer 访问它的内容。
+ * 映射一个 GPUBuffer 是通过 mapAsync() 异步请求的，这样用户代理可以确保 GPU 在应用程序访问它的内容之前完成了对 GPUBuffer 的使用。
+ * 映射的 GPUBuffer 不能被 GPU 使用，必须使用 unmap() 解除映射，然后才能将使用它的工作提交到 Queue 时间轴。
+ * 一旦映射了 GPUBuffer，应用程序就可以通过 getMappedRange 同步请求访问其内容的范围
+ */
 
 // 着色器
 import vertWGSL from "./shader/cubeVert.wgsl?raw";
@@ -84,16 +91,17 @@ const pipline = device.createRenderPipeline({
     }),
     entryPoint: "main",
     buffers: [
+      // 缓冲区集合，其中一个元素对应一个缓冲对象
       {
-        arrayStride: cubeVertexSize,
+        arrayStride: cubeVertexSize, // 顶点长度 以字节为单位
         attributes: [
           {
-            shaderLocation: 0,
+            shaderLocation: 0, // 遍历索引，这里的索引值就对应的是着色器语言中 @location(0) 的数字
             offset: cubePositionOffset,
             format: "float32x4",
           },
           {
-            shaderLocation: 1,
+            shaderLocation: 1, // @location(1)
             offset: cubeUVOffset,
             format: "float32x2",
           },
@@ -122,6 +130,7 @@ const pipline = device.createRenderPipeline({
   multisample: {
     count: 4,
   },
+  // 深度
   depthStencil: {
     depthWriteEnabled: true,
     depthCompare: "less",
@@ -225,6 +234,7 @@ const render = () => {
     modelViewProjectionMatrix.byteLength
   );
   // 开始命令编码
+  // 我们不能直接操作command buffer，需要创建command encoder，使用它将多个commands（如render pass的draw）设置到一个command buffer中，然后执行submit，把command buffer提交到gpu driver的队列中。
   const commandEncoder = device.createCommandEncoder();
 
   // 开启渲染通道
@@ -241,12 +251,14 @@ const render = () => {
           b: 0.0,
           a: 1.0,
         },
-        // 清除操作
+        // load 的意思是渲染前保留attachment中的数据,clear 意思是渲染前清除
         loadOp: "clear",
-        // 保存操作
+        // 如果为“store”，意思是渲染后保存被渲染的内容到内存中，后面可以被读取；如果为“clear”，意思是渲染后清空内容。
         storeOp: "store",
       },
     ],
+    // 在深度测试时，gpu会将fragment的z值（范围为[0.0-1.0]）与这里设置的depthClearValue值（这里为1.0）比较。
+    // 其中使用depthCompare定义的函数（这里为less，意思是所有z值大于等于1.0的fragment会被剔除）进行比较。
     depthStencilAttachment: {
       view: depthTexture.createView(),
       depthClearValue: 1.0,

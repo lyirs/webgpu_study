@@ -121,7 +121,8 @@ const video = document.querySelector("#video") as HTMLVideoElement;
 
 // 加载模型
 let carMaterial: any = null;
-let leftDoor: { rotation: gsap.TweenTarget; }, rightDoor: { rotation: gsap.TweenTarget; };
+let leftDoor: { rotation: gsap.TweenTarget },
+  rightDoor: { rotation: gsap.TweenTarget };
 const loader = new GLTFLoader();
 loader.load("model/zeekr.glb", (gltf) => {
   const model = gltf.scene;
