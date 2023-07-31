@@ -2,8 +2,10 @@
 
 <div align="center">
 
-![Static Badge](https://img.shields.io/badge/chrome-113+-orange)
+![Static Badge](https://img.shields.io/badge/chrome-113+-green)
 ![Static Badge](https://img.shields.io/badge/pnpm-8.2.0-orange)
+![Static Badge](https://img.shields.io/badge/typescript-5.0.4-orange)
+![Static Badge](https://img.shields.io/badge/vite-4.3.2-blue)
 
 </div>
 
@@ -15,12 +17,14 @@
 
 </h3>
 
-| 文件        | 描述                |
-| ----------- | ------------------- |
-| drawio      | 一些流程图之类的    |
-| triangle    | 最基础的画三角形    |
-| helloworld  | 旋转的正方体        |
-| threejs-car | three.js 的一个应用 |
+| 文件         | 描述                     |
+| ------------ | ------------------------ |
+| drawio       | 一些流程图之类的         |
+| triangle     | 最基础的画三角形         |
+| helloworld   | 旋转的正方体             |
+| twoCubes     | 两个旋转的正方体         |
+| twoCubesMSAA | 两个旋转的正方体带抗锯齿 |
+| threejs-car  | three.js 的一个应用      |
 
 <h3 align="center">
 
