@@ -131,28 +131,11 @@ const uniformBindGroup2 = device.createBindGroup({
   ],
 });
 
-let view = gpu.context.getCurrentTexture().createView();
 const depthTexture = device.createTexture({
   size: [canvas.width, canvas.height],
   format: "depth24plus",
   usage: GPUTextureUsage.RENDER_ATTACHMENT,
 });
-const renderPassDescription = {
-  colorAttachments: [
-    {
-      view: view,
-      clearValue: { r: 0.2, g: 0.247, b: 0.314, a: 1.0 }, //background color
-      loadOp: "clear",
-      storeOp: "store",
-    },
-  ],
-  depthStencilAttachment: {
-    view: depthTexture.createView(),
-    depthClearValue: 1.0,
-    depthLoadOp: "clear",
-    depthStoreOp: "store",
-  },
-};
 
 // 渲染
 const render = () => {
@@ -197,16 +180,27 @@ const render = () => {
     modelViewProjectionMatrix2.byteLength
   );
 
-  view = gpu.context.getCurrentTexture().createView();
-  renderPassDescription.colorAttachments[0].view = view;
   // 开始命令编码
   // 我们不能直接操作command buffer，需要创建command encoder，使用它将多个commands（如render pass的draw）设置到一个command buffer中，然后执行submit，把command buffer提交到gpu driver的队列中。
   const commandEncoder = device.createCommandEncoder();
 
   // 开启渲染通道
-  const renderPass = commandEncoder.beginRenderPass(
-    renderPassDescription as GPURenderPassDescriptor
-  );
+  const renderPass = commandEncoder.beginRenderPass({
+    colorAttachments: [
+      {
+        view: context.getCurrentTexture().createView(),
+        clearValue: { r: 0.2, g: 0.247, b: 0.314, a: 1.0 }, //background color
+        loadOp: "clear",
+        storeOp: "store",
+      },
+    ],
+    depthStencilAttachment: {
+      view: depthTexture.createView(),
+      depthClearValue: 1.0,
+      depthLoadOp: "clear",
+      depthStoreOp: "store",
+    },
+  });
   // 设置渲染管线
   renderPass.setPipeline(pipeline);
   // 设置顶点缓冲区
