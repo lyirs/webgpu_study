@@ -1,10 +1,11 @@
-<h1 align="center">WebGPU</h1>
+<h1 align="center">WebGPU Study</h1>
 
 <div align="center">
 
 ![Static Badge](https://img.shields.io/badge/chrome-113+-green)
-![Static Badge](https://img.shields.io/badge/pnpm-8.2.0-orange)
+![Static Badge](https://img.shields.io/badge/pnpm-8.2.0-8A2BE2)
 ![Static Badge](https://img.shields.io/badge/typescript-5.0.4-orange)
+![Static Badge](https://img.shields.io/badge/gl--matrix-3.4.3-orange)
 ![Static Badge](https://img.shields.io/badge/vite-4.3.2-blue)
 
 </div>
@@ -34,8 +35,12 @@
 
 </h3>
 
+- [WebGPU 最新版本](https://www.w3.org/TR/webgpu/)
+- [WebGPU 中文翻译文档](https://www.orillusion.com/zh/webgpu.html)
 - [WGSL 最新版本](https://www.w3.org/TR/WGSL/)
 - [WGSL 中文翻译文档](https://www.orillusion.com/zh/wgsl.html)
+- [WebGPU 说明](https://gpuweb.github.io/gpuweb/explainer/)
+- [WebGPU 说明 中文翻译文档](https://www.orillusion.com/zh/explainer.html)
 
 <hr/>
 
