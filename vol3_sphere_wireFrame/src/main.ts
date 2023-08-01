@@ -15,7 +15,6 @@ const gpu = await InitGPU();
 const device = gpu.device;
 const canvas = gpu.canvas;
 const format = gpu.format;
-const context = gpu.context;
 let radius = 2;
 let u = 20;
 let v = 15;
