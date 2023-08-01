@@ -1,0 +1,19 @@
+{
+  "name": "helloworld",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.32",
+    "typescript": "^5.0.4",
+    "vite": "^4.3.2"
+  },
+  "dependencies": {
+    "gl-matrix": "^3.4.3"
+  }
+}

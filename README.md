@@ -27,6 +27,7 @@
 | oneCube_MSAA_textureSampling | 一个旋转的正方体带抗锯齿与纹理采样 |
 | twoCubes                     | 两个旋转的正方体                   |
 | twoCubesMSAA                 | 两个旋转的正方体带抗锯齿           |
+| sphere_wireFrame             | 一个旋转的线框球体                 |
 | threejs-car                  | three.js 的一个应用                |
 
 <h3 align="center">

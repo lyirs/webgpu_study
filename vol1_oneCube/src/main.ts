@@ -141,7 +141,7 @@ const depthTexture = device.createTexture({
 });
 
 // UBO
-const uniformBufferSize = 4 * 16;
+const uniformBufferSize = 4 * 4 * 4;
 const uniformBuffer = device.createBuffer({
   size: uniformBufferSize,
   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
