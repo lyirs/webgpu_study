@@ -260,9 +260,13 @@ const depthTexture = device.createTexture({
 // 渲染
 const render = () => {
   CreateTransforms(modelMatrix, [0, 0, 0], rotation);
-  mat4.multiply(mvMatrix, vp.viewMatrix, modelMatrix);
-  mat4.invert(normalMatrix, modelMatrix);
-  mat4.transpose(normalMatrix, normalMatrix);
+  // 在进行模型变换（尤其是非均匀缩放）时，我们想要保持法线与表面之间的垂直关系。
+  // 由于法线是一个方向向量，不受位移影响，只受到旋转和缩放的影响，所以我们需要找到一个与原始矩阵不同的矩阵来应用到法线上。
+  // 这就是逆转置矩阵
+  // 这个操作适用于非均匀缩放的情况，如果你的模型没有非均匀缩放，即x、y和z轴的缩放因子都是一样的，那么就可以直接使用模型视图矩阵来转换法线，无需计算逆转置矩阵
+  mat4.multiply(mvMatrix, vp.viewMatrix, modelMatrix); // 计算模型视图矩阵
+  mat4.invert(normalMatrix, modelMatrix); // 计算模型矩阵的逆矩阵
+  mat4.transpose(normalMatrix, normalMatrix); // 将逆矩阵转置
   device.queue.writeBuffer(vertexUniformBuffer, 0, mvMatrix as ArrayBuffer);
   device.queue.writeBuffer(
     vertexUniformBuffer,

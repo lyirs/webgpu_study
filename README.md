@@ -30,6 +30,7 @@
 | sphere_wireFrame             | 一个旋转的线框球体                                          |
 | vol4_oneCube_light_mv+p      | 一个具有照明效果的旋转的正方体（模型视图矩阵+投影矩阵实现） |
 | vol4_oneCube_light_vp+m      | 一个具有照明效果的旋转的正方体（视图投影矩阵+模型矩阵实现） |
+| vol5_objects_light_mv+p      | 带有基础照明的多个物体                                      |
 | threejs-car                  | three.js 的一个应用                                         |
 
 <h3 align="center">
@@ -46,6 +47,9 @@
 - [WGSL 中文翻译文档](https://www.orillusion.com/zh/wgsl.html)
 - [WebGPU 说明](https://gpuweb.github.io/gpuweb/explainer/)
 - [WebGPU 说明 中文翻译文档](https://www.orillusion.com/zh/explainer.html)
+- [google 工程师维护的 WebGPU 示例](https://github.com/austinEng/webgpu-samples)
+- [WebGPU API C++版本](https://dawn.googlesource.com/dawn)
+- [官方演示](https://webgpu.github.io/webgpu-samples)
 
 <hr/>
 
