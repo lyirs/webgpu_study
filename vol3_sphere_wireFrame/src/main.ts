@@ -2,8 +2,8 @@
 /// <reference types="vite/client" />
 import "./style.css";
 import { InitGPU } from "./helper/init";
-import vertWGSL from "./shader/cubeVert.wgsl?raw";
-import fragWGSL from "./shader/cubeFrag.wgsl?raw";
+import vertWGSL from "./shader/sphereVert.wgsl?raw";
+import fragWGSL from "./shader/sphereFrag.wgsl?raw";
 import { mat4, vec3 } from "gl-matrix";
 import { CreateGPUBuffer, CreateGPUBufferUint } from "./helper/gpuBuffer";
 import { CreateViewProjection } from "./helper/createViewProjection";

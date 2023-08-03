@@ -2,8 +2,8 @@
 /// <reference types="vite/client" />
 import "./style.css";
 import { InitGPU } from "./helper/init";
-import vertWGSL from "./shader/cubeVert.wgsl?raw";
-import fragWGSL from "./shader/cubeFrag.wgsl?raw";
+import vertWGSL from "./shader/vert.wgsl?raw";
+import fragWGSL from "./shader/frag.wgsl?raw";
 import * as sphere from "./helper/sphere";
 import * as box from "./helper/box";
 import { getModelViewMatrix, getProjectionMatrix } from "./helper/math";
@@ -232,7 +232,6 @@ const lightGroup = device.createBindGroup({
 });
 
 // 创建物体
-const scene: any[] = [];
 const modelViewMatrix = new Float32Array(NUM * 4 * 4);
 const colorBufferArray = new Float32Array(NUM * 4);
 for (let i = 0; i < NUM; i++) {
@@ -246,7 +245,6 @@ for (let i = 0; i < NUM; i++) {
   const modelView = getModelViewMatrix(position, rotation, scale);
   modelViewMatrix.set(modelView, i * 4 * 4);
   colorBufferArray.set([Math.random(), Math.random(), Math.random(), 1], i * 4);
-  scene.push({ position, rotation, scale });
 }
 device.queue.writeBuffer(colorBuffer, 0, colorBufferArray);
 device.queue.writeBuffer(modelViewBuffer, 0, modelViewMatrix);

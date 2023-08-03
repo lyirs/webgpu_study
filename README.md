@@ -32,6 +32,7 @@
 | vol4_oneCube_light_vp+m           | 一个具有照明效果的旋转的正方体（视图投影矩阵+模型矩阵实现）         |
 | vol5_objects_light_mv+p           | 带有基础照明的多个物体                                              |
 | vol5_objects_light_mv+p_layout    | 带有基础照明的多个物体（创建 pipeline 时指定 layout 而非使用 auto） |
+| vol6_shadowMapping                | 利用阴影贴图实现实时阴影                                            |
 | threejs-car                       | three.js 的一个应用                                                 |
 
 <h3 align="center">
