@@ -4,12 +4,10 @@ import "./style.css";
 import { InitGPU } from "./helper/init";
 import vertWGSL from "./shader/sphereVert.wgsl?raw";
 import fragWGSL from "./shader/sphereFrag.wgsl?raw";
-import { mat4, vec3 } from "gl-matrix";
-import { CreateGPUBuffer, CreateGPUBufferUint } from "./helper/gpuBuffer";
-import { CreateViewProjection } from "./helper/createViewProjection";
-import { CreateTransforms } from "./helper/createTransforms";
-import { CreateAnimation } from "./helper/animation";
+import { mat4, vec3 } from "wgpu-matrix";
+import { CreateGPUBuffer } from "./helper/gpuBuffer";
 import { SphereWireframeData } from "./helper/vertexData";
+import { getModelMatrix, getViewProjectionMatrix } from "./helper/math";
 
 const gpu = await InitGPU();
 const device = gpu.device;
@@ -18,7 +16,7 @@ const format = gpu.format;
 let radius = 2;
 let u = 20;
 let v = 15;
-let center: vec3 = [0, 0, 0];
+let center = [0, 0, 0];
 
 const wireframeData = SphereWireframeData(radius, u, v, center) as Float32Array;
 const wireframeVertexCount = wireframeData.length / 3;
@@ -70,12 +68,15 @@ const pipeline = device.createRenderPipeline({
 
 // UBO
 const aspect = canvas.width / canvas.height; // 相机宽高比例
-const vp = CreateViewProjection(aspect);
-
+const fov = (60 / 180) * Math.PI;
+const near = 0.1;
+const far = 100.0;
+const position = { x: 0, y: 0, z: 10 };
+let vpMatrix = getViewProjectionMatrix(aspect, fov, near, far, position);
 let rotation = vec3.fromValues(0, 0, 0);
 
-const modelMatrix = mat4.create();
-const modelViewProjectionMatrix = mat4.create();
+const modelMatrix = mat4.identity();
+const modelViewProjectionMatrix = mat4.identity();
 
 const uniformBuffer = device.createBuffer({
   size: 64,
@@ -96,12 +97,14 @@ const uniformBindGroup = device.createBindGroup({
 
 // 渲染
 const render = () => {
-  CreateTransforms(modelMatrix, [0, 0, 0], rotation);
-  mat4.multiply(
-    modelViewProjectionMatrix,
-    vp.viewProjectionMatrix,
-    modelMatrix
+  rotation[0] += 0.01;
+  rotation[1] += 0.01;
+  rotation[2] += 0.01;
+  const modelMatrix = getModelMatrix(
+    { x: 0, y: 0, z: 0 },
+    { x: rotation[0], y: rotation[1], z: rotation[2] }
   );
+  mat4.multiply(vpMatrix, modelMatrix, modelViewProjectionMatrix);
 
   device.queue.writeBuffer(
     uniformBuffer,
@@ -140,5 +143,6 @@ const render = () => {
   renderPass.end();
   // 提交命令
   device.queue.submit([commandEncoder.finish()]);
+  requestAnimationFrame(render);
 };
-CreateAnimation(render, rotation, true);
+render();

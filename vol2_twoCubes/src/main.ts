@@ -4,12 +4,10 @@ import "./style.css";
 import { InitGPU } from "./helper/init";
 import vertWGSL from "./shader/cubeVert.wgsl?raw";
 import fragWGSL from "./shader/cubeFrag.wgsl?raw";
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, vec3 } from "wgpu-matrix";
 import { CubeData } from "./helper/vertexData";
 import { CreateGPUBuffer, CreateGPUBufferUint } from "./helper/gpuBuffer";
-import { CreateViewProjection } from "./helper/createViewProjection";
-import { CreateTransforms } from "./helper/createTransforms";
-import { CreateAnimation } from "./helper/animation";
+import { getModelMatrix, getViewProjectionMatrix } from "./helper/math";
 
 const gpu = await InitGPU();
 const device = gpu.device;
@@ -86,17 +84,27 @@ const uniformBufferSize = uniformOffset + matrixSize;
 let rotation = vec3.fromValues(0, 0, 0);
 
 const aspect = canvas.width / canvas.height; // 相机宽高比例
-const vp = CreateViewProjection(aspect);
+const fov = (2 * Math.PI) / 5;
+const near = 0.1;
+const far = 100.0;
+const position = { x: 2, y: 2, z: 4 };
+let vpMatrix = getViewProjectionMatrix(aspect, fov, near, far, position);
 
-const modelMatrix1 = mat4.create();
-const translateMatrix1 = mat4.create();
-CreateTransforms(translateMatrix1, [-2, -1, 0.5], [0, 0, 0], [1, 1, 1]);
-const modelViewProjectionMatrix1 = mat4.create() as Float32Array;
+const modelMatrix1 = mat4.identity();
+const translateMatrix1 = getModelMatrix(
+  { x: -2, y: -1, z: 0.5 },
+  { x: 0, y: 0, z: 0 },
+  { x: 1, y: 1, z: 1 }
+);
+const modelViewProjectionMatrix1 = mat4.identity() as Float32Array;
 
-const modelMatrix2 = mat4.create();
-const translateMatrix2 = mat4.create();
-CreateTransforms(translateMatrix2, [1, 1, -2], [0, 0, 0], [1, 1, 1]);
-const modelViewProjectionMatrix2 = mat4.create() as Float32Array;
+const modelMatrix2 = mat4.identity();
+const translateMatrix2 = getModelMatrix(
+  { x: 1, y: 1, z: -2 },
+  { x: 0, y: 0, z: 0 },
+  { x: 1, y: 1, z: 1 }
+);
+const modelViewProjectionMatrix2 = mat4.identity() as Float32Array;
 
 const uniformBuffer = device.createBuffer({
   size: uniformBufferSize,
@@ -139,32 +147,25 @@ const depthTexture = device.createTexture({
 
 // 渲染
 const render = () => {
+  rotation[0] += 0.01;
+  rotation[1] += 0.01;
+  rotation[2] += 0.01;
   // cube1
   mat4.rotate(
-    modelMatrix1,
     translateMatrix1,
+    vec3.fromValues(Math.sin(2 * rotation[0]), Math.cos(2 * rotation[0]), 0),
     1,
-    vec3.fromValues(Math.sin(2 * rotation[0]), Math.cos(2 * rotation[0]), 0)
+    modelMatrix1
   );
-  mat4.multiply(modelViewProjectionMatrix1, vp.viewMatrix, modelMatrix1);
-  mat4.multiply(
-    modelViewProjectionMatrix1,
-    vp.projectionMatrix,
-    modelViewProjectionMatrix1
-  );
+  mat4.multiply(vpMatrix, modelMatrix1, modelViewProjectionMatrix1);
   // cube2
   mat4.rotate(
-    modelMatrix2,
     translateMatrix2,
+    vec3.fromValues(Math.cos(2 * rotation[1]), 0, Math.sin(2 * rotation[1])),
     1,
-    vec3.fromValues(Math.cos(2 * rotation[1]), 0, Math.sin(2 * rotation[1]))
+    modelMatrix2
   );
-  mat4.multiply(modelViewProjectionMatrix2, vp.viewMatrix, modelMatrix2);
-  mat4.multiply(
-    modelViewProjectionMatrix2,
-    vp.projectionMatrix,
-    modelViewProjectionMatrix2
-  );
+  mat4.multiply(vpMatrix, modelMatrix2, modelViewProjectionMatrix2);
   device.queue.writeBuffer(
     uniformBuffer,
     0,
@@ -215,5 +216,6 @@ const render = () => {
   renderPass.end();
   // 提交命令
   device.queue.submit([commandEncoder.finish()]);
+  requestAnimationFrame(render);
 };
-CreateAnimation(render, rotation, true);
+render();

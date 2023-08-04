@@ -4,20 +4,22 @@ import "./style.css";
 import { InitGPU } from "./helper/init";
 import vertWGSL from "./shader/cubeVert.wgsl?raw";
 import fragWGSL from "./shader/cubeFrag.wgsl?raw";
-import { mat4, vec3, vec4 } from "gl-matrix";
+import { mat4, vec3, vec4 } from "wgpu-matrix";
 import { CubeData } from "./helper/vertexData";
-import { CreateGPUBuffer, CreateGPUBufferUint } from "./helper/gpuBuffer";
-import { CreateViewProjection } from "./helper/createViewProjection";
-import { CreateTransforms } from "./helper/createTransforms";
-import { CreateAnimation } from "./helper/animation";
+import { CreateGPUBuffer } from "./helper/gpuBuffer";
+import {
+  getModelMatrix,
+  getProjectionMatrix,
+  getViewMatrix,
+} from "./helper/math";
 
 interface LightInputs {
-  color: vec3;
+  color: any;
   ambientIntensity: number;
   diffuseIntensity: number;
   specularIntensity: number;
   shininess: number;
-  specularColor: vec3;
+  specularColor: any;
 }
 
 const gpu = await InitGPU();
@@ -43,19 +45,24 @@ const vertexBuffer = CreateGPUBuffer(device, cubeData.positions);
 const normalBuffer = CreateGPUBuffer(device, cubeData.normals);
 
 const aspect = canvas.width / canvas.height; // 相机宽高比例
-const vp = CreateViewProjection(aspect);
+const fov = (60 / 180) * Math.PI;
+const near = 0.1;
+const far = 100.0;
+const position = { x: 0, y: 0, z: 10 };
 
-const normalMatrix = mat4.create();
-const modelMatrix = mat4.create(); // 法向量
-let vMatrix = mat4.create();
-let pMatrix = mat4.create();
-pMatrix = vp.projectionMatrix;
-let mvMatrix = mat4.create();
-mat4.multiply(mvMatrix, vMatrix, modelMatrix);
+const normalMatrix = mat4.identity();
+const modelMatrix = mat4.identity(); // 法向量
+
+let vMatrix = mat4.identity();
+let pMatrix = mat4.identity();
+pMatrix = getProjectionMatrix(aspect, fov, near, far);
+let mvMatrix = mat4.identity();
+mat4.multiply(vMatrix, modelMatrix, mvMatrix);
 
 let rotation = vec3.fromValues(0, 0, 0);
-let eyePosition = new Float32Array(vp.cameraOption.eye);
+let eyePosition = new Float32Array([position.x, position.y, position.z]);
 let lightPosition = eyePosition;
+let viewMatrix = getViewMatrix(position);
 
 var lightParams = [] as any;
 lightParams.push([light.color[0], light.color[1], light.color[2], 1.0]);
@@ -92,15 +99,15 @@ const lightUniformBuffer = device.createBuffer({
 // 而在mv+p方式中，你先将物体从世界空间变换到视图空间（视图变换），然后在视图空间中进行投影变换（投影变换）。这就意味着你的着色器是在视图空间中进行计算的，因此需要将光源位置和视点位置也转换到视图空间中，以便于进行正确的光照计算。
 let lightPositionViewSpace = vec4.create();
 vec4.transformMat4(
-  lightPositionViewSpace,
   [lightPosition[0], lightPosition[1], lightPosition[2], 1.0],
-  vp.viewMatrix
+  viewMatrix,
+  lightPositionViewSpace
 );
 let eyePositionViewSpace = vec4.create();
 vec4.transformMat4(
-  eyePositionViewSpace,
   [eyePosition[0], eyePosition[1], eyePosition[2], 1.0],
-  vp.viewMatrix
+  viewMatrix,
+  eyePositionViewSpace
 );
 
 device.queue.writeBuffer(vertexUniformBuffer, 0, mvMatrix as ArrayBuffer);
@@ -259,13 +266,19 @@ const depthTexture = device.createTexture({
 
 // 渲染
 const render = () => {
-  CreateTransforms(modelMatrix, [0, 0, 0], rotation);
+  rotation[0] += 0.01;
+  rotation[1] += 0.01;
+  rotation[2] += 0.01;
+  const modelMatrix = getModelMatrix(
+    { x: 0, y: 0, z: 0 },
+    { x: rotation[0], y: rotation[1], z: rotation[2] }
+  );
   // 在进行模型变换（尤其是非均匀缩放）时，我们想要保持法线与表面之间的垂直关系。
   // 由于法线是一个方向向量，不受位移影响，只受到旋转和缩放的影响，所以我们需要找到一个与原始矩阵不同的矩阵来应用到法线上。
   // 这就是逆转置矩阵
   // 这个操作适用于非均匀缩放的情况，如果你的模型没有非均匀缩放，即x、y和z轴的缩放因子都是一样的，那么就可以直接使用模型视图矩阵来转换法线，无需计算逆转置矩阵
-  mat4.multiply(mvMatrix, vp.viewMatrix, modelMatrix); // 计算模型视图矩阵
-  mat4.invert(normalMatrix, modelMatrix); // 计算模型矩阵的逆矩阵
+  mat4.multiply(viewMatrix, modelMatrix, mvMatrix); // 计算模型视图矩阵
+  mat4.invert(modelMatrix, normalMatrix); // 计算模型矩阵的逆矩阵
   mat4.transpose(normalMatrix, normalMatrix); // 将逆矩阵转置
   device.queue.writeBuffer(vertexUniformBuffer, 0, mvMatrix as ArrayBuffer);
   device.queue.writeBuffer(
@@ -306,5 +319,6 @@ const render = () => {
   renderPass.end();
   // 提交命令
   device.queue.submit([commandEncoder.finish()]);
+  requestAnimationFrame(render);
 };
-CreateAnimation(render, rotation, true);
+render();

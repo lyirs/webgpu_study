@@ -1,5 +1,5 @@
-@group(0) @binding(0) var<storage> modelViews : array<mat4x4<f32>>;
-@group(0) @binding(1) var<uniform> cameraProjection : mat4x4<f32>;
+@group(0) @binding(0) var<storage> model : array<mat4x4<f32>>;
+@group(0) @binding(1) var<uniform> viewProjection : mat4x4<f32>;
 @group(0) @binding(2) var<uniform> lightProjection : mat4x4<f32>;
 @group(0) @binding(3) var<storage> colors : array<vec4<f32>>;
 
@@ -21,9 +21,9 @@ fn shadow(
     @location(1) normal : vec3<f32>,
     @location(2) uv : vec2<f32>,
 ) -> @builtin(position) vec4<f32> {
-    let modelview = modelViews[index];
+    let modelMatrix = model[index];
     let pos = vec4(position, 1.0);
-    return lightProjection * modelview * pos;
+    return lightProjection * modelMatrix * pos;
     // 输出灯光视角下所有物体的投影空间坐标
 }
 
@@ -44,18 +44,18 @@ fn main(
     @location(1) normal : vec3<f32>,
     @location(2) uv : vec2<f32>
 ) -> VertexOutput {
-    let modelview = modelViews[index];
+    let modelMatrix = model[index];
     let pos = vec4<f32>(position, 1.0);
-    let posFromCamera: vec4<f32> = cameraProjection * modelview * pos;
+    let posFromCamera: vec4<f32> = viewProjection * modelMatrix * pos;
 
     var output : VertexOutput;
     output.Position = posFromCamera;   // 相机MVP变换后的投影坐标，给GPU输出绘制几何关系
-    output.fragPosition = (modelview * pos).xyz;  // 不包括投影变换的世界坐标，辅助计算光线入射方向的
-    output.fragNormal =  (modelview * vec4<f32>(normal, 0.0)).xyz;
+    output.fragPosition = (modelMatrix * pos).xyz;  // 不包括投影变换的世界坐标，辅助计算光线入射方向的
+    output.fragNormal =  (modelMatrix * vec4<f32>(normal, 0.0)).xyz;
     output.fragUV = uv;
     output.fragColor = colors[index];
 
-    let posFromLight: vec4<f32> = lightProjection * modelview * pos;  // 灯光MVP变换后的投影坐标，用来查找灯光贴图中的深度信息的
+    let posFromLight: vec4<f32> = lightProjection * modelMatrix * pos;  // 灯光MVP变换后的投影坐标，用来查找灯光贴图中的深度信息的
     // 转换shadowPos XY (-1, 1) 以适应 texture UV (0, 1)，方便后续贴图操作
     output.shadowPos = vec3<f32>(posFromLight.xy * vec2<f32>(0.5, -0.5) + vec2<f32>(0.5, 0.5), posFromLight.z);
     return output;

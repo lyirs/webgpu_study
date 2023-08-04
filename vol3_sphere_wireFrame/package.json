@@ -14,6 +14,6 @@
     "vite": "^4.3.2"
   },
   "dependencies": {
-    "gl-matrix": "^3.4.3"
+    "wgpu-matrix": "^2.5.0"
   }
 }

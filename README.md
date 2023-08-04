@@ -4,9 +4,11 @@
 
 ![Static Badge](https://img.shields.io/badge/chrome-113+-green)
 ![Static Badge](https://img.shields.io/badge/pnpm-8.2.0-8A2BE2)
-![Static Badge](https://img.shields.io/badge/typescript-5.0.4-orange)
-![Static Badge](https://img.shields.io/badge/gl--matrix-3.4.3-orange)
 ![Static Badge](https://img.shields.io/badge/vite-4.3.2-blue)
+
+![Static Badge](https://img.shields.io/badge/typescript-5.0.4-orange)
+![Static Badge](https://img.shields.io/badge/wgpu--matrix-2.5.0-orange)
+![Static Badge](https://img.shields.io/badge/dat.gui-0.7.9-orange)
 
 </div>
 
@@ -33,6 +35,7 @@
 | vol5_objects_light_mv+p           | 带有基础照明的多个物体                                              |
 | vol5_objects_light_mv+p_layout    | 带有基础照明的多个物体（创建 pipeline 时指定 layout 而非使用 auto） |
 | vol6_shadowMapping                | 利用阴影贴图实现实时阴影                                            |
+| vol7_computeShader                | 利用计算着色器模拟数十万物体动态移动                                |
 | threejs-car                       | three.js 的一个应用                                                 |
 
 <h3 align="center">
@@ -53,6 +56,11 @@
 - [WebGPU API C++版本](https://dawn.googlesource.com/dawn)
 - [官方演示](https://webgpu.github.io/webgpu-samples)
 
+<div>
+</div>
+
+- [WebGPU 博客](https://alain.xyz/blog/raw-webgpu)
+
 <hr/>
 
 <h3 align="center">
@@ -62,6 +70,20 @@
 💡 **基本使用** 💡
 
 </h3>
+
+进入对应项目
+
+```bash
+├─ 📂 node_modules/ # 👶 Dependencies
+│ ├─ 📁 gl-matrix # ➕ Linear Algebra
+│ └─ 📁 ... # 🕚 Other Dependencies (TypeScript, etc.)
+├─ 📂 src/ # 🌟 Source Files
+│ ├─ 📄 index.html # 📇 Main HTML file
+│ └─ 📄 main.ts # 🔺 Triangle Renderer
+├─ 📄 .gitignore # 👁️ Ignore certain files in git repo
+├─ 📄 package.json # 📦 Node Package File
+└─ 📃 readme.md # 📖 Read Me!
+```
 
 ### 依赖安装
 

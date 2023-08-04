@@ -4,20 +4,18 @@ import "./style.css";
 import { InitGPU } from "./helper/init";
 import vertWGSL from "./shader/cubeVert.wgsl?raw";
 import fragWGSL from "./shader/cubeFrag.wgsl?raw";
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, vec3 } from "wgpu-matrix";
 import { CubeData } from "./helper/vertexData";
 import { CreateGPUBuffer, CreateGPUBufferUint } from "./helper/gpuBuffer";
-import { CreateViewProjection } from "./helper/createViewProjection";
-import { CreateTransforms } from "./helper/createTransforms";
-import { CreateAnimation } from "./helper/animation";
+import { getModelMatrix, getViewProjectionMatrix } from "./helper/math";
 
 interface LightInputs {
-  color: vec3;
+  color: any;
   ambientIntensity: number;
   diffuseIntensity: number;
   specularIntensity: number;
   shininess: number;
-  specularColor: vec3;
+  specularColor: any;
 }
 
 const gpu = await InitGPU();
@@ -43,16 +41,16 @@ const vertexBuffer = CreateGPUBuffer(device, cubeData.positions);
 const normalBuffer = CreateGPUBuffer(device, cubeData.normals);
 
 const aspect = canvas.width / canvas.height; // 相机宽高比例
-const vp = CreateViewProjection(aspect);
+const fov = (60 / 180) * Math.PI;
+const near = 0.1;
+const far = 100.0;
+const position = { x: 0, y: 0, z: 10 };
 
-const normalMatrix = mat4.create();
-const modelMatrix = mat4.create(); // 法向量
-let vMatrix = mat4.create();
-let vpMatrix = mat4.create();
-vpMatrix = vp.viewProjectionMatrix;
+const normalMatrix = mat4.identity(); // 法向量
+let vpMatrix = getViewProjectionMatrix(aspect, fov, near, far, position);
 
-let rotation = vec3.fromValues(0, 0, 0);
-let eyePosition = new Float32Array(vp.cameraOption.eye);
+let rotation = vec3.fromValues(0, 5, 0);
+let eyePosition = new Float32Array([position.x, position.y, position.z]);
 let lightPosition = eyePosition;
 
 var lightParams = [] as any;
@@ -85,11 +83,7 @@ const lightUniformBuffer = device.createBuffer({
   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 });
 
-device.queue.writeBuffer(
-  vertexUniformBuffer,
-  0,
-  vp.viewProjectionMatrix as ArrayBuffer
-);
+device.queue.writeBuffer(vertexUniformBuffer, 0, vpMatrix);
 device.queue.writeBuffer(fragmentUniformBuffer, 0, lightPosition);
 device.queue.writeBuffer(fragmentUniformBuffer, 16, eyePosition);
 device.queue.writeBuffer(
@@ -235,8 +229,14 @@ const depthTexture = device.createTexture({
 
 // 渲染
 const render = () => {
-  CreateTransforms(modelMatrix, [0, 0, 0], rotation);
-  mat4.invert(normalMatrix, modelMatrix);
+  rotation[0] += 0.01;
+  rotation[1] += 0.01;
+  rotation[2] += 0.01;
+  const modelMatrix = getModelMatrix(
+    { x: 0, y: 0, z: 0 },
+    { x: rotation[0], y: rotation[1], z: rotation[2] }
+  );
+  mat4.invert(modelMatrix, normalMatrix);
   mat4.transpose(normalMatrix, normalMatrix);
   device.queue.writeBuffer(vertexUniformBuffer, 64, modelMatrix as ArrayBuffer);
   device.queue.writeBuffer(
@@ -276,5 +276,7 @@ const render = () => {
   renderPass.end();
   // 提交命令
   device.queue.submit([commandEncoder.finish()]);
+  requestAnimationFrame(render);
 };
-CreateAnimation(render, rotation, true);
+
+render();

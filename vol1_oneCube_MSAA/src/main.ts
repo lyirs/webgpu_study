@@ -79,7 +79,7 @@ vertexBuffer.unmap(); // 解除显存对象的映射，稍后它就能在 GPU �
 // 着色器
 import vertWGSL from "./shader/cubeVert.wgsl?raw";
 import fragWGSL from "./shader/cubeFrag.wgsl?raw";
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, vec3 } from "wgpu-matrix";
 // 创建渲染管线
 const pipline = device.createRenderPipeline({
   // 布局
@@ -153,18 +153,18 @@ const uniformBuffer = device.createBuffer({
 });
 
 const aspect = canvas.width / canvas.height; // 相机宽高比例
-const projectionMatrix = mat4.create();
-mat4.perspective(projectionMatrix, (45 * Math.PI) / 180, aspect, 0.1, 100.0);
+const projectionMatrix = mat4.identity();
+mat4.perspective((45 * Math.PI) / 180, aspect, 0.1, 100.0, projectionMatrix);
 
 function getTransformationMatrix() {
-  const viewMatrix = mat4.create();
-  mat4.translate(viewMatrix, viewMatrix, vec3.fromValues(0, 0, -8));
+  const viewMatrix = mat4.identity();
+  mat4.translate(viewMatrix, vec3.fromValues(0, 0, -8), viewMatrix);
 
   const now = Date.now() / 1000;
 
-  mat4.rotate(viewMatrix, viewMatrix, now, vec3.fromValues(1, 1, 1));
-  const modelViewProjectionMatrix = mat4.create() as Float32Array;
-  mat4.multiply(modelViewProjectionMatrix, projectionMatrix, viewMatrix);
+  mat4.rotate(viewMatrix, vec3.fromValues(1, 1, 1), now, viewMatrix);
+  const modelViewProjectionMatrix = mat4.identity() as Float32Array;
+  mat4.multiply(projectionMatrix, viewMatrix, modelViewProjectionMatrix);
   return modelViewProjectionMatrix;
 }
 

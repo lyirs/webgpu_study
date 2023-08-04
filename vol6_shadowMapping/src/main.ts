@@ -5,9 +5,9 @@ import { InitGPU } from "./helper/init";
 import vertWGSL from "./shader/vert.wgsl?raw";
 import fragWGSL from "./shader/frag.wgsl?raw";
 import * as box from "./helper/box";
-import { getModelViewMatrix, getProjectionMatrix } from "./helper/math";
+import { getModelMatrix, getViewProjectionMatrix } from "./helper/math";
 import { CreateGPUBuffer, CreateGPUBufferUint16 } from "./helper/gpuBuffer";
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, vec3 } from "wgpu-matrix";
 import { createBindGroup } from "./helper/bindGroup";
 
 const gpu = await InitGPU();
@@ -125,12 +125,12 @@ const boxBuffer = {
   index: CreateGPUBufferUint16(device, box.index),
 };
 
-const modelViewBuffer = device.createBuffer({
+const modelBuffer = device.createBuffer({
   size: 4 * 4 * 4 * NUM, // 4 x 4 x float32 x NUM
   usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
 });
 
-const cameraProjectionBuffer = device.createBuffer({
+const viewProjectionBuffer = device.createBuffer({
   size: 4 * 4 * 4, // 4 x 4 x float32
   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 });
@@ -152,18 +152,18 @@ const lightBuffer = device.createBuffer({
 
 const aspect = size.width / size.height;
 
-const projectionMatrix = getProjectionMatrix(
+const viewProjectionMatrix = getViewProjectionMatrix(
   aspect,
   (60 / 180) * Math.PI,
   0.1,
   1000,
   { x: 0, y: 10, z: 20 }
 );
-device.queue.writeBuffer(cameraProjectionBuffer, 0, projectionMatrix);
+device.queue.writeBuffer(viewProjectionBuffer, 0, viewProjectionMatrix);
 
 let vsGroup = createBindGroup(device, pipeline, 0, [
-  { binding: 0, resource: modelViewBuffer },
-  { binding: 1, resource: cameraProjectionBuffer },
+  { binding: 0, resource: modelBuffer },
+  { binding: 1, resource: viewProjectionBuffer },
   { binding: 2, resource: lightProjectionBuffer },
   { binding: 3, resource: colorBuffer },
 ]);
@@ -178,12 +178,12 @@ const fsGroup = createBindGroup(device, pipeline, 1, [
 ]);
 
 const shadowGroup = createBindGroup(device, shadowPipeline, 0, [
-  { binding: 0, resource: modelViewBuffer },
+  { binding: 0, resource: modelBuffer },
   { binding: 2, resource: lightProjectionBuffer },
 ]);
 
 // 创建物体
-const modelViewMatrix = new Float32Array(NUM * 4 * 4);
+const modelBufferArray = new Float32Array(NUM * 4 * 4);
 const colorBufferArray = new Float32Array(NUM * 4);
 
 // add a center box
@@ -191,8 +191,9 @@ const colorBufferArray = new Float32Array(NUM * 4);
   const position = { x: 0, y: 0, z: -20 };
   const rotation = { x: 0, y: Math.PI / 4, z: 0 };
   const scale = { x: 2, y: 20, z: 2 };
-  const modelView = getModelViewMatrix(position, rotation, scale);
-  modelViewMatrix.set(modelView, 0 * 4 * 4);
+  const model = getModelMatrix(position, rotation, scale);
+  // 相机不移动，不绑定view matrix
+  modelBufferArray.set(model, 0 * 4 * 4);
   colorBufferArray.set([0.5, 0.5, 0.5, 1], 0 * 4);
 }
 // add a floor
@@ -200,15 +201,15 @@ const colorBufferArray = new Float32Array(NUM * 4);
   const position = { x: 0, y: -10, z: -20 };
   const rotation = { x: 0, y: 0, z: 0 };
   const scale = { x: 50, y: 0.5, z: 40 };
-  const modelView = getModelViewMatrix(position, rotation, scale);
-  modelViewMatrix.set(modelView, 1 * 4 * 4);
+  const model = getModelMatrix(position, rotation, scale);
+  modelBufferArray.set(model, 1 * 4 * 4);
   colorBufferArray.set([1, 1, 1, 1], 1 * 4);
 }
 
 device.queue.writeBuffer(colorBuffer, 0, colorBufferArray);
 
-const lightViewMatrix = mat4.create();
-const lightProjectionMatrix = mat4.create();
+const lightViewMatrix = mat4.identity();
+const lightProjectionMatrix = mat4.identity();
 const lightPosition = vec3.fromValues(0, 100, 0);
 const up = vec3.fromValues(0, 1, 0);
 const origin = vec3.fromValues(0, 0, 0);
@@ -224,20 +225,20 @@ const render = () => {
   // lightPosition 是光源的位置
   // origin 是视点的位置，通常是场景的中心点
   // up 是表示“上”方向的向量，通常为 [0, 1, 0]
-  mat4.lookAt(lightViewMatrix, lightPosition, origin, up);
+  mat4.lookAt(lightPosition, origin, up, lightViewMatrix);
   // 创建一个正交投影矩阵
   // lightProjectionMatrix 是接收生成的矩阵的变量
   // -40, 40, -40, 40, -50, 200 分别是投影的左，右，下，上，近，远平面的值
-  mat4.ortho(lightProjectionMatrix, -40, 40, -40, 40, -50, 200);
+  mat4.ortho(-40, 40, -40, 40, -50, 200, lightProjectionMatrix);
   // 将场景从世界空间直接转换到光源的裁剪空间
-  mat4.multiply(lightProjectionMatrix, lightProjectionMatrix, lightViewMatrix);
+  mat4.multiply(lightProjectionMatrix, lightViewMatrix, lightProjectionMatrix);
   device.queue.writeBuffer(
     lightProjectionBuffer,
     0,
     lightProjectionMatrix as Float32Array
   );
   device.queue.writeBuffer(lightBuffer, 0, lightPosition as Float32Array);
-  device.queue.writeBuffer(modelViewBuffer, 0, modelViewMatrix);
+  device.queue.writeBuffer(modelBuffer, 0, modelBufferArray);
 
   // 开始命令编码
   const commandEncoder = device.createCommandEncoder();

@@ -1,9 +1,9 @@
 lockfileVersion: '6.0'
 
 dependencies:
-  gl-matrix:
-    specifier: ^3.4.3
-    version: 3.4.3
+  wgpu-matrix:
+    specifier: ^2.5.0
+    version: 2.5.0
 
 devDependencies:
   '@webgpu/types':
@@ -258,10 +258,6 @@ packages:
     dev: true
     optional: true
 
-  /gl-matrix@3.4.3:
-    resolution: {integrity: sha512-wcCp8vu8FT22BnvKVPjXa/ICBWRq/zjFfdofZy1WSpQZpphblv12/bOQLBC1rMM7SGOFS9ltVmKOHil5+Ml7gA==}
-    dev: false
-
   /nanoid@3.3.6:
     resolution: {integrity: sha512-BGcqMMJuToF7i1rt+2PWSNVnWIkGCU78jBG3RxO/bZlnZPK2Cmi2QaffxGO/2RvWi9sL+FAiRiXMgsyxQ1DIDA==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -331,3 +327,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
+
+  /wgpu-matrix@2.5.0:
+    resolution: {integrity: sha512-2y/yyQwEX4m00SD9U00Rdm2p+5D0vMAJqqT0zsmVD+8ndYLEA+AhL2cG99CUWBuuMddLazukBHCvL3qi1bi0nQ==}
+    dev: false
