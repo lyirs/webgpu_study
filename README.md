@@ -75,7 +75,7 @@
 
 ```bash
 ├─ 📂 node_modules/ # 👶 Dependencies
-│ ├─ 📁 gl-matrix # ➕ Linear Algebra
+│ ├─ 📁 wgpu-matrix # ➕ Linear Algebra
 │ └─ 📁 ... # 🕚 Other Dependencies (TypeScript, etc.)
 ├─ 📂 src/ # 🌟 Source Files
 │ ├─ 📄 index.html # 📇 Main HTML file
