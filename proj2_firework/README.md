@@ -47,43 +47,38 @@ Binding size (32) is smaller than the minimum binding size (48).
 | i32, u32, or f32 | 4 | 4 |
 | f16 | 2 | 2 |
 | atomic | 4 | 4 |
-| vec2<T>, T is i32, u32, or f32 | 8 | 8 |
-| vec2<f16> | 4 | 4 |
-| vec3<T>, T is i32, u32, or f32 | 16 | 12 |
-| vec3<f16> | 8 | 6 |
-| vec4<T>, T is i32, u32, or f32 | 16 | 16 |
-| vec4<f16> | 8 | 8 |
-| matCxR (col-major) (General form) | | |
-| AlignOf(vecR) | | |
-| mat2x2<f32> | 8 | 16 |
-| mat2x2<f16> | 4 | 8 |
-| mat3x2<f32> | 8 | 24 |
-| mat3x2<f16> | 4 | 12 |
-| mat4x2<f32> | 8 | 32 |
-| mat4x2<f16> | 4 | 16 |
-| mat2x3<f32> | 16 | 32 |
-| mat2x3<f16> | 8 | 16 |
-| mat3x3<f32> | 16 | 48 |
-| mat3x3<f16> | 8 | 24 |
-| mat4x3<f32> | 16 | 64 |
-| mat4x3<f16> | 8 | 32 |
-| mat2x4<f32> | 16 | 32 |
-| mat2x4<f16> | 8 | 16 |
-| mat3x4<f32> | 16 | 48 |
-| mat3x4<f16> | 8 | 24 |
-| mat4x4<f32> | 16 | 64 |
-| mat4x4<f16> | 8 | 32 |
-| struct S with members M1...MN | | |
-| max(AlignOfMember(S,1), ... , AlignOfMember(S,N)) | | |
-| roundUp(AlignOf(S), justPastLastMember) | | |
-| array<E, N> | AlignOf(E) × N × roundUp(AlignOf(E), SizeOf(E)) | |
-| array<E> | AlignOf(E) × NRuntime × roundUp(AlignOf(E), SizeOf(E)) | |
-
-(Note: The "matCxR (col-major) (General form)" section is incomplete and does not include specific data.)
+| vec2&lt;T&gt;, T is i32, u32, or f32 | 8 | 8 |
+| vec2&lt;f16&gt; | 4 | 4 |
+| vec3&lt;T&gt;, T is i32, u32, or f32 | 16 | 12 |
+| vec3&lt;f16&gt; | 8 | 6 |
+| vec4&lt;T&gt;, T is i32, u32, or f32 | 16 | 16 |
+| vec4&lt;f16&gt; | 8 | 8 |
+| matCxR (col-major) (General form) | AlignOf(vecR) | SizeOf(array&lt;vecR, C&gt;)|
+| mat2x2&lt;f32&gt; | 8 | 16 |
+| mat2x2&lt;f16&gt; | 4 | 8 |
+| mat3x2&lt;f32&gt; | 8 | 24 |
+| mat3x2&lt;f16&gt; | 4 | 12 |
+| mat4x2&lt;f32&gt; | 8 | 32 |
+| mat4x2&lt;f16&gt; | 4 | 16 |
+| mat2x3&lt;f32&gt; | 16 | 32 |
+| mat2x3&lt;f16&gt; | 8 | 16 |
+| mat3x3&lt;f32&gt; | 16 | 48 |
+| mat3x3&lt;f16&gt; | 8 | 24 |
+| mat4x3&lt;f32&gt; | 16 | 64 |
+| mat4x3&lt;f16&gt; | 8 | 32 |
+| mat2x4&lt;f32&gt; | 16 | 32 |
+| mat2x4&lt;f16&gt; | 8 | 16 |
+| mat3x4&lt;f32&gt; | 16 | 48 |
+| mat3x4&lt;f16&gt; | 8 | 24 |
+| mat4x4&lt;f32&gt; | 16 | 64 |
+| mat4x4&lt;f16&gt; | 8 | 32 |
+| struct S with members M<sub>1</sub>...M<sub>N</sub> | max(AlignOfMember(S,1), ... , AlignOfMember(S,N)) | roundUp(AlignOf(S), justPastLastMember) <br><br>where justPastLastMember = OffsetOfMember(S,N) + SizeOfMember(S,N)|
+| array&lt;E, N&gt; | AlignOf(E) | N × roundUp(AlignOf(E), SizeOf(E)) |
+| array&lt;E&gt; | AlignOf(E) | NRuntime × roundUp(AlignOf(E), SizeOf(E))<br><br> where NRuntime is the runtime-determined number of elements of T |
 
 按照计算公式
 
-<span style="background-color: gray;">OffsetOfMember(S, i) = roundUp(AlignOfMember(S, i), OffsetOfMember(S, i-1) + SizeOfMember(S, i-1))</span>
+<b><span style="background-color: gray; color:blue">OffsetOfMember(S, i) = roundUp(AlignOfMember(S, i), OffsetOfMember(S, i-1) + SizeOfMember(S, i-1))</span></b>
 
 ```
 struct Particle {
