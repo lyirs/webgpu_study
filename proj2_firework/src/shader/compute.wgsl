@@ -28,7 +28,6 @@ fn main(
     if (particle.lifetime <= 0.02) {
         particle.position = vec2<f32>(0.0, 0.0); // 重置到初始位置
         particle.velocity = vec2<f32>(0.0, 0.0);
-        particle.velocity *= 0.5;
     }
     particleBuffer.particles[index] = particle;
 }
