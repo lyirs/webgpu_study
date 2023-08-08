@@ -62,7 +62,7 @@ const pipeline = device.createRenderPipeline({
   },
   // 图元类型
   primitive: {
-    topology: "point-list",
+    topology: "line-list",
   },
 });
 
@@ -92,57 +92,77 @@ const renderGroup = createBindGroup(device, pipeline, 0, [
 // 创建物体
 const particles = new Float32Array(numParticles * 8);
 
+const x = 0;
+const y = 0;
 // 为每个实例生成随机的初始位置和速度
 for (let i = 0; i < numParticles; i++) {
-  const angle = Math.random() * Math.PI * 2;
-  const speed = Math.random() * 0.2;
-  const lifetime = Math.random();
-  const r = Math.random();
-  const g = Math.random();
-  const b = Math.random();
+  if (i % 2 == 0) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 0.005;
+    const lifetime = Math.random() * 0.6;
+    const r = Math.random();
+    const g = Math.random();
+    const b = Math.random();
 
-  particles[i * 8] = 0; // 初始 x 坐标
-  particles[i * 8 + 1] = 0; // 初始 y 坐标
-  particles[i * 8 + 2] = Math.cos(angle) * speed; // x 速度
-  particles[i * 8 + 3] = Math.sin(angle) * speed; // y 速度
-  particles[i * 8 + 4] = lifetime; // 持续时间
-  particles[i * 8 + 5] = r; // r
-  particles[i * 8 + 6] = g; // g
-  particles[i * 8 + 7] = b; // b
+    //终点
+    particles[i * 8] = x; // 初始 x 坐标
+    particles[i * 8 + 1] = y; // 初始 y 坐标
+    particles[i * 8 + 2] = Math.cos(angle) * speed * 1.15; // x 速度
+    particles[i * 8 + 3] = Math.sin(angle) * speed * 1.15; // y 速度
+    particles[i * 8 + 4] = lifetime; // 持续时间
+    particles[i * 8 + 5] = r; // r
+    particles[i * 8 + 6] = g; // g
+    particles[i * 8 + 7] = b; // b
+    // 起点
+    particles[(i + 1) * 8] = x; // 初始 x 坐标
+    particles[(i + 1) * 8 + 1] = y; // 初始 y 坐标
+    particles[(i + 1) * 8 + 2] = Math.cos(angle) * speed; // x 速度
+    particles[(i + 1) * 8 + 3] = Math.sin(angle) * speed; // y 速度
+    particles[(i + 1) * 8 + 4] = lifetime; // 持续时间
+    particles[(i + 1) * 8 + 5] = r; // r
+    particles[(i + 1) * 8 + 6] = g; // g
+    particles[(i + 1) * 8 + 7] = b; // b
+  }
 }
 device.queue.writeBuffer(particleBuffer, 0, particles);
 
+let time = 0;
 // 渲染
 const render = () => {
-  // 开始命令编码
-  const commandEncoder = device.createCommandEncoder();
+  if (time % 3 == 0) {
+    // 开始命令编码
+    const commandEncoder = device.createCommandEncoder();
 
-  const computePass = commandEncoder.beginComputePass();
-  computePass.setPipeline(computePipeline);
-  computePass.setBindGroup(0, computeGroup);
+    const computePass = commandEncoder.beginComputePass();
+    computePass.setPipeline(computePipeline);
+    computePass.setBindGroup(0, computeGroup);
 
-  computePass.dispatchWorkgroups(Math.ceil(numParticles / 64));
-  computePass.end();
+    computePass.dispatchWorkgroups(Math.ceil(numParticles / 64));
+    computePass.end();
 
-  const renderPass = commandEncoder.beginRenderPass({
-    colorAttachments: [
-      {
-        view: context.getCurrentTexture().createView(),
-        clearValue: { r: 0, g: 0, b: 0, a: 1.0 }, //background color
-        loadOp: "clear",
-        storeOp: "store",
-      },
-    ],
-  });
-  // 设置渲染管线
-  renderPass.setPipeline(pipeline);
-  renderPass.setBindGroup(0, renderGroup);
-  renderPass.setVertexBuffer(0, particleBuffer);
-  renderPass.draw(numParticles, 1, 0, 0);
-  // 结束渲染通道
-  renderPass.end();
-  // 提交命令
-  device.queue.submit([commandEncoder.finish()]);
+    const renderPass = commandEncoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: context.getCurrentTexture().createView(),
+          clearValue: { r: 0, g: 0, b: 0, a: 1.0 }, //background color
+          loadOp: "clear",
+          storeOp: "store",
+        },
+      ],
+    });
+    // 设置渲染管线
+    renderPass.setPipeline(pipeline);
+    0;
+    renderPass.setBindGroup(0, renderGroup);
+    renderPass.setVertexBuffer(0, particleBuffer);
+    renderPass.draw(numParticles, 2, 0, 0);
+    // 结束渲染通道
+    renderPass.end();
+    // 提交命令
+    device.queue.submit([commandEncoder.finish()]);
+    time++;
+  }
+  time++;
   requestAnimationFrame(render);
 };
 render();
