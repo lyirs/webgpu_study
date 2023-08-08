@@ -37,6 +37,7 @@
 | vol6_shadowMapping                | 利用阴影贴图实现实时阴影                                            |
 | vol7_computeShader                | 利用计算着色器模拟数十万物体动态移动                                |
 | proj1_gameOfLife                  | 生命游戏                                                            |
+| proj2_firework                    | 简易烟花 与 wgsl 中对齐尺寸说明                                     |
 
 <h3 align="center">
 

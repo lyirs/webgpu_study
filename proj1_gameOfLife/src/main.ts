@@ -101,7 +101,7 @@ const resetGameData = () => {
         // 缓冲区集合，其中一个元素对应一个缓冲对象
         // cell
         {
-          arrayStride: Uint32Array.BYTES_PER_ELEMENT, // 每个元素的字节大小
+          arrayStride: Uint32Array.BYTES_PER_ELEMENT, // 每个元素的字节大小 4
           stepMode: "instance", // 表示这个缓冲区集合在实例化时会被使用，每个实例使用一次
           attributes: [
             {
@@ -113,7 +113,7 @@ const resetGameData = () => {
         },
         // pos
         {
-          arrayStride: 2 * squareVertices.BYTES_PER_ELEMENT,
+          arrayStride: 2 * squareVertices.BYTES_PER_ELEMENT, // 2*4
           stepMode: "vertex", // 表示这个缓冲区集合在每个顶点绘制时会被使用
           attributes: [
             {
