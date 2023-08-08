@@ -103,7 +103,7 @@ struct Particle {                               //              align(16)   size
     lifetime : f32,                             // offset(16)   align(4)    size(4)    OffsetOfMember = roundUp(4,16) = 16
     // -- implicit member alignment padding --  // offset(20)               size(12)
     color : vec3<f32>                           // offset(32)   align(16)   size(12)   OffsetOfMember = roundUp(16,20) = 20，但20不是16的倍数，加上size(12)对齐
-    // -- implicit struct size padding --       // offset(44)               size(4)    必须是align(16)的倍数，即48。所以加上size(8)对齐
+    // -- implicit struct size padding --       // offset(44)               size(4)    必须是align(16)的倍数，即48。所以加上size(4)对齐
 };
 ```
 
