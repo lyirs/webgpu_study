@@ -129,6 +129,10 @@ device.queue.writeBuffer(particleBuffer, 0, particles);
 let time = 0;
 // 渲染
 const render = () => {
+  if (time % 500 == 0) {
+    device.queue.writeBuffer(particleBuffer, 0, particles);
+    time = 1;
+  }
   if (time % 3 == 0) {
     // 开始命令编码
     const commandEncoder = device.createCommandEncoder();
@@ -154,7 +158,6 @@ const render = () => {
     renderPass.setPipeline(pipeline);
     0;
     renderPass.setBindGroup(0, renderGroup);
-    renderPass.setVertexBuffer(0, particleBuffer);
     renderPass.draw(numParticles, 2, 0, 0);
     // 结束渲染通道
     renderPass.end();
