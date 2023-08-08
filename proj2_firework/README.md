@@ -83,7 +83,7 @@ Binding size (32) is smaller than the minimum binding size (48).
 
 按照计算公式
 
-<span style="background-color: lightgray;">OffsetOfMember(S, i) = roundUp(AlignOfMember(S, i ), OffsetOfMember(S, i-1) + SizeOfMember(S, i-1))</span>
+<span style="background-color: gray;">OffsetOfMember(S, i) = roundUp(AlignOfMember(S, i), OffsetOfMember(S, i-1) + SizeOfMember(S, i-1))</span>
 
 ```
 struct Particle {
@@ -99,10 +99,67 @@ struct Particle {
 ```
 struct Particle {                               //              align(16)   size(48)   最大align为16，总大小为48
     position : vec2<f32>,                       // offset(0)    align(8)    size(8)
-    // -- implicit member alignment padding --  // offset(8)                size(8)    下一个offset算出来为16，第一个大小只有8，所以加上size(8)对齐
-    velocity : vec2<f32>,                       // offset(16)   align(8)    size(8)    OffsetOfMember = roundUp(8,16) = ⌈8 ÷ 16⌉ × 16 = 16
-    lifetime : f32,                             // offset(24)   align(4)    size(4)    OffsetOfMember = roundUp(4,24) = 24
-    color : vec3<f32>                           // offset(28)   align(16)   size(12)   OffsetOfMember = roundUp(16,28) = 28
-    // -- implicit struct size padding --       // offset(40)               size(8)    必须是align(16)的倍数，即48。所以加上size(8)对齐
+    velocity : vec2<f32>,                       // offset(8)    align(8)    size(8)    OffsetOfMember = roundUp(8,8) = ⌈8 ÷ 8⌉ × 8 = 8
+    lifetime : f32,                             // offset(16)   align(4)    size(4)    OffsetOfMember = roundUp(4,16) = 16
+    // -- implicit member alignment padding --  // offset(20)               size(12)
+    color : vec3<f32>                           // offset(32)   align(16)   size(12)   OffsetOfMember = roundUp(16,20) = 20，但20不是16的倍数，加上size(12)对齐
+    // -- implicit struct size padding --       // offset(44)               size(4)    必须是align(16)的倍数，即48。所以加上size(8)对齐
 };
+```
+
+下面是 w3c 中的例子：
+
+```
+struct A {                                     //             align(8)  size(24)
+    u: f32,                                    // offset(0)   align(4)  size(4)
+    v: f32,                                    // offset(4)   align(4)  size(4)
+    w: vec2<f32>,                              // offset(8)   align(8)  size(8)
+    x: f32                                     // offset(16)  align(4)  size(4)
+    // -- implicit struct size padding --      // offset(20)            size(4)
+}
+
+struct B {                                     //             align(16) size(160)
+    a: vec2<f32>,                              // offset(0)   align(8)  size(8)
+    // -- implicit member alignment padding -- // offset(8)             size(8)
+    b: vec3<f32>,                              // offset(16)  align(16) size(12)
+    c: f32,                                    // offset(28)  align(4)  size(4)
+    d: f32,                                    // offset(32)  align(4)  size(4)
+    // -- implicit member alignment padding -- // offset(36)            size(4)
+    e: A,                                      // offset(40)  align(8)  size(24)
+    f: vec3<f32>,                              // offset(64)  align(16) size(12)
+    // -- implicit member alignment padding -- // offset(76)            size(4)
+    g: array<A, 3>,    // element stride 24       offset(80)  align(8)  size(72)
+    h: i32                                     // offset(152) align(4)  size(4)
+    // -- implicit struct size padding --      // offset(156)           size(4)
+}
+
+@group(0) @binding(0)
+var<storage,read_write> storage_buffer: B;
+```
+
+```
+struct A {                                     //             align(8)  size(32)
+    u: f32,                                    // offset(0)   align(4)  size(4)
+    v: f32,                                    // offset(4)   align(4)  size(4)
+    w: vec2<f32>,                              // offset(8)   align(8)  size(8)
+    @size(16) x: f32                           // offset(16)  align(4)  size(16)
+}
+
+struct B {                                     //             align(16) size(208)
+    a: vec2<f32>,                              // offset(0)   align(8)  size(8)
+    // -- implicit member alignment padding -- // offset(8)             size(8)
+    b: vec3<f32>,                              // offset(16)  align(16) size(12)
+    c: f32,                                    // offset(28)  align(4)  size(4)
+    d: f32,                                    // offset(32)  align(4)  size(4)
+    // -- implicit member alignment padding -- // offset(36)            size(12)
+    @align(16) e: A,                           // offset(48)  align(16) size(32)
+    f: vec3<f32>,                              // offset(80)  align(16) size(12)
+    // -- implicit member alignment padding -- // offset(92)            size(4)
+    g: array<A, 3>,    // element stride 32       offset(96)  align(8)  size(96)
+    h: i32                                     // offset(192) align(4)  size(4)
+    // -- implicit struct size padding --      // offset(196)           size(12)
+}
+
+@group(0) @binding(0)
+var<uniform> uniform_buffer: B;
 ```

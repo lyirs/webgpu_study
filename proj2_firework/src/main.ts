@@ -66,7 +66,7 @@ const pipeline = device.createRenderPipeline({
   },
 });
 
-const numParticles = 10000;
+const numParticles = 6400;
 
 const particleBuffer = device.createBuffer({
   size: numParticles * 8 * 4,
