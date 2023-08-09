@@ -17,5 +17,5 @@
     "jsx": "react-jsx",
     "types": ["vite/client", "@webgpu/types"]
   },
-  "include": ["src"],
+  "include": ["src"]
 }
