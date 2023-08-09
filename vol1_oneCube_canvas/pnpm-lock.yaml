@@ -1,26 +1,14 @@
 lockfileVersion: '6.0'
 
 dependencies:
-  dat.gui:
-    specifier: ^0.7.9
-    version: 0.7.9
-  stats.js:
-    specifier: ^0.17.0
-    version: 0.17.0
   wgpu-matrix:
     specifier: ^2.5.0
     version: 2.5.0
 
 devDependencies:
-  '@types/dat.gui':
-    specifier: ^0.7.10
-    version: 0.7.10
-  '@types/stats.js':
-    specifier: ^0.17.0
-    version: 0.17.0
   '@webgpu/types':
-    specifier: ^0.1.34
-    version: 0.1.34
+    specifier: ^0.1.32
+    version: 0.1.32
   typescript:
     specifier: ^5.0.4
     version: 5.0.4
@@ -228,21 +216,9 @@ packages:
     dev: true
     optional: true
 
-  /@types/dat.gui@0.7.10:
-    resolution: {integrity: sha512-sLifoNrvs4lgJkAUZcTB28dbWy0AM05Yc0BzTqHheK0tRYRVsJHoFLocB5heDbb5amaFLEXna41GOM6IG06oqA==}
+  /@webgpu/types@0.1.32:
+    resolution: {integrity: sha512-H6JRAvRonWxqREjxXMZgQmdgIFPe6mykLgdrHY7EQE7YihMKd/SjtSGilUmMKECVdUMg2IQB9vzaXDiTj1AxZg==}
     dev: true
-
-  /@types/stats.js@0.17.0:
-    resolution: {integrity: sha512-9w+a7bR8PeB0dCT/HBULU2fMqf6BAzvKbxFboYhmDtDkKPiyXYbjoe2auwsXlEFI7CFNMF1dCv3dFH5Poy9R1w==}
-    dev: true
-
-  /@webgpu/types@0.1.34:
-    resolution: {integrity: sha512-9mXtH+CC8q+Ku7Z+1XazNIte81FvfdXwR2lLRO7Ykzjd/hh1J1krJa0gtnkF1kvP11psUmKEPKo7iMTeEcUpNA==}
-    dev: true
-
-  /dat.gui@0.7.9:
-    resolution: {integrity: sha512-sCNc1OHobc+Erc1HqiswYgHdVNpSJUlk/Hz8vzOCsER7rl+oF/4+v8GXFUyCgtXpoCX6+bnmg07DedLvBLwYKQ==}
-    dev: false
 
   /esbuild@0.17.19:
     resolution: {integrity: sha512-XQ0jAPFkK/u3LcVRcvVHQcTIqD6E2H1fvZMA5dQPSOWb3suUbWbfbRf94pjc0bNzRYLfIrDRQXr7X+LHIm5oHw==}
@@ -313,10 +289,6 @@ packages:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
     dev: true
-
-  /stats.js@0.17.0:
-    resolution: {integrity: sha512-hNKz8phvYLPEcRkeG1rsGmV5ChMjKDAWU7/OJJdDErPBNChQXxCo3WZurGpnWc6gZhAzEPFad1aVgyOANH1sMw==}
-    dev: false
 
   /typescript@5.0.4:
     resolution: {integrity: sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==}

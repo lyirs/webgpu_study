@@ -140,7 +140,7 @@ const depthTexture = device.createTexture({
   usage: GPUTextureUsage.RENDER_ATTACHMENT,
 });
 
-// UBO
+// 统一缓冲区 UBO
 const uniformBufferSize = 4 * 4 * 4;
 const uniformBuffer = device.createBuffer({
   size: uniformBufferSize,

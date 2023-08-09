@@ -27,6 +27,7 @@
 | vol1_oneCube                      | 一个旋转的正方体                                                    |
 | vol1_oneCube_MSAA                 | 一个旋转的正方体带抗锯齿                                            |
 | vol1_oneCube_MSAA_textureSampling | 一个旋转的正方体带抗锯齿与纹理采样                                  |
+| vol1_oneCube_canvas               | 一个旋转的正方体带 canvas 贴图                                      |
 | vol2_twoCubes                     | 两个旋转的正方体                                                    |
 | vol2_twoCubesMSAA                 | 两个旋转的正方体带抗锯齿                                            |
 | vol3_sphere_wireFrame             | 一个旋转的线框球体                                                  |
@@ -61,6 +62,7 @@
 </div>
 
 - [WebGPU 博客](https://alain.xyz/blog/raw-webgpu)
+- [WebGPU 示例](https://webgpu-gpu-book.drxudotnet.com/)
 
 <hr/>
 

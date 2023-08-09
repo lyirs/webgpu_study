@@ -6,12 +6,17 @@ import vertWGSL from "./shader/vert.wgsl?raw";
 import fragWGSL from "./shader/frag.wgsl?raw";
 import computeWGSL from "./shader/compute.wgsl?raw";
 import { createBindGroup } from "./helper/bindGroup";
+import * as Stats from "stats.js";
 
 const gpu = await InitGPU();
 const device = gpu.device;
 const canvas = gpu.canvas;
 const format = gpu.format;
 const context = gpu.context;
+
+const stats = new Stats();
+stats.showPanel(0);
+document.body.appendChild(stats.dom);
 
 // 渲染管线
 // 计算着色器
@@ -129,6 +134,7 @@ device.queue.writeBuffer(particleBuffer, 0, particles);
 let time = 0;
 // 渲染
 const render = () => {
+  stats.begin();
   if (time % 500 == 0) {
     device.queue.writeBuffer(particleBuffer, 0, particles);
     time = 1;
@@ -166,6 +172,7 @@ const render = () => {
     time++;
   }
   time++;
+  stats.end();
   requestAnimationFrame(render);
 };
 render();
