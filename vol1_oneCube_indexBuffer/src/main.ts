@@ -8,8 +8,6 @@ import { InitGPU } from "./helper/init";
 import { CubeData } from "./helper/vertexData";
 import { getMvpMatrix } from "./helper/math";
 
-import videoSrc from "/1.mp4";
-
 const gpu = await InitGPU();
 const device = gpu.device;
 const canvas = gpu.canvas;
@@ -113,19 +111,6 @@ const uniformBindGroup = device.createBindGroup({
   ],
 });
 
-// 采样 sampler 创建一个 GPUSampler。
-const sampler = device.createSampler({
-  magFilter: "linear",
-  minFilter: "linear",
-});
-
-const video = document.createElement("video");
-video.loop = true;
-video.autoplay = true;
-video.muted = true;
-video.src = videoSrc;
-await video.play();
-
 // 初始数据
 let aspect = canvas.width / canvas.height;
 const position = { x: 0, y: 0, z: -5 };
@@ -134,33 +119,6 @@ const rotation = { x: 0, y: 0, z: 0 };
 
 // 渲染
 const render = () => {
-  // 视频帧率可能不会与页面渲染率相同
-  // 我们可以使用VideoFrame来强制视频解码当前帧
-  // @ts-ignore
-  const videoFrame = new VideoFrame(video);
-  videoFrame.close();
-
-  // importExternalTexture只会返回当前视频帧的截图，并不会随着video的播放而自动更新
-  // 所以要在循环中手动调用
-  // 另外每一次GPU刷新，这个texture会被立即销毁回收，其生命周期只能保持在render的回调函数中，与其他texture并不一样
-  // 其在wgsl中也有单独的类型 texture_external
-  const texture = device.importExternalTexture({
-    source: video,
-  });
-  const textureBindGroup = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(1),
-    entries: [
-      {
-        binding: 0,
-        resource: sampler,
-      },
-      {
-        binding: 1,
-        resource: texture, // 这里不需要createView
-      },
-    ],
-  });
-
   const now = Date.now() / 1000;
   rotation.x = Math.sin(now);
   rotation.y = Math.cos(now);
@@ -201,7 +159,6 @@ const render = () => {
   renderPass.setPipeline(pipeline);
   // 设置绑定组
   renderPass.setBindGroup(0, uniformBindGroup);
-  renderPass.setBindGroup(1, textureBindGroup);
   // 设置顶点缓冲区
   renderPass.setVertexBuffer(0, vertexBuffer);
   renderPass.setIndexBuffer(indexBuffer, "uint32");

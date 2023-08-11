@@ -158,3 +158,6 @@ struct B {                                     //             align(16) size(208
 @group(0) @binding(0)
 var<uniform> uniform_buffer: B;
 ```
+
+
+[字节对齐 偏移量计算工具网站](https://webgpufundamentals.org/webgpu/lessons/resources/wgsl-offset-computer.html)

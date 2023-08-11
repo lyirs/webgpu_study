@@ -13,6 +13,7 @@ if (navigator.gpu === undefined) {
 }
 const context = canvas.getContext("webgpu") as GPUCanvasContext;
 // 请求WebGPU适配器与GPU设备
+// 适配器（Adapter）是特定操作系统的 API 与 WebGPU 之间的中介。
 const adapter = (await navigator.gpu.requestAdapter()) as GPUAdapter;
 const device = await adapter.requestDevice();
 const format = navigator.gpu.getPreferredCanvasFormat();

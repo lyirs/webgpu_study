@@ -20,27 +20,27 @@
 
 </h3>
 
-| 文件                                           | 描述                                                                |
-| ---------------------------------------------- | ------------------------------------------------------------------- |
-| drawio                                         | 一些流程图之类的                                                    |
-| vol0_triangle                                  | 最基础的画三角形                                                    |
-| vol1_oneCube                                   | 一个旋转的正方体                                                    |
-| vol1_oneCube_MSAA                              | 抗锯齿                                                              |
-| vol1_oneCube_image_textureSampling             | 图片纹理采样                                                        |
-| vol1_oneCube_canvas_textureSampling            | 画布纹理采样                                                        |
-| vol1_oneCube_video_textureSampling             | 视频纹理采样                                                        |
-| vol1_oneCube_video_textureSampling_indexBuffer | 索引缓冲区                                                          |
-| vol2_twoCubes                                  | 两个旋转的正方体                                                    |
-| vol2_twoCubesMSAA                              | 两个旋转的正方体带抗锯齿                                            |
-| vol3_sphere_wireFrame                          | 一个旋转的线框球体                                                  |
-| vol4_oneCube_light_mv+p                        | 一个具有照明效果的旋转的正方体（模型视图矩阵+投影矩阵实现）         |
-| vol4_oneCube_light_vp+m                        | 一个具有照明效果的旋转的正方体（视图投影矩阵+模型矩阵实现）         |
-| vol5_objects_light                             | 带有基础照明的多个物体                                              |
-| vol5_objects_light_layout                      | 带有基础照明的多个物体（创建 pipeline 时指定 layout 而非使用 auto） |
-| vol6_shadowMapping                             | 利用阴影贴图实现实时阴影                                            |
-| vol7_computeShader                             | 利用计算着色器模拟数十万物体动态移动                                |
-| proj1_gameOfLife                               | 生命游戏                                                            |
-| proj2_firework                                 | 简易烟花 与 wgsl 中对齐尺寸说明                                     |
+| 文件                                | 描述                                                                |
+| ----------------------------------- | ------------------------------------------------------------------- |
+| drawio                              | 一些流程图之类的                                                    |
+| vol0_triangle                       | 最基础的画三角形                                                    |
+| vol1_oneCube                        | 一个旋转的正方体                                                    |
+| vol1_oneCube_MSAA                   | 抗锯齿                                                              |
+| vol1_oneCube_image_textureSampling  | 图片纹理采样                                                        |
+| vol1_oneCube_canvas_textureSampling | 画布纹理采样                                                        |
+| vol1_oneCube_video_textureSampling  | 视频纹理采样                                                        |
+| vol1_oneCube_indexBuffer            | 索引缓冲区                                                          |
+| vol2_twoCubes                       | 两个旋转的正方体                                                    |
+| vol2_twoCubesMSAA                   | 两个旋转的正方体带抗锯齿                                            |
+| vol3_sphere_wireFrame               | 一个旋转的线框球体                                                  |
+| vol4_oneCube_light_mv+p             | 一个具有照明效果的旋转的正方体（模型视图矩阵+投影矩阵实现）         |
+| vol4_oneCube_light_vp+m             | 一个具有照明效果的旋转的正方体（视图投影矩阵+模型矩阵实现）         |
+| vol5_objects_light                  | 带有基础照明的多个物体                                              |
+| vol5_objects_light_layout           | 带有基础照明的多个物体（创建 pipeline 时指定 layout 而非使用 auto） |
+| vol6_shadowMapping                  | 利用阴影贴图实现实时阴影                                            |
+| vol7_computeShader                  | 利用计算着色器模拟数十万物体动态移动                                |
+| proj1_gameOfLife                    | 生命游戏                                                            |
+| proj2_firework                      | 简易烟花 与 wgsl 中对齐尺寸说明                                     |
 
 <h3 align="center">
 
@@ -65,6 +65,11 @@
 
 - [WebGPU 博客](https://alain.xyz/blog/raw-webgpu)
 - [WebGPU 示例](https://webgpu-gpu-book.drxudotnet.com/)
+
+<div>
+</div>
+
+- [偏移量计算工具网站](https://webgpufundamentals.org/webgpu/lessons/resources/wgsl-offset-computer.html)
 
 <hr/>
 
