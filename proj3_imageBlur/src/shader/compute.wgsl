@@ -15,13 +15,10 @@ struct Flip {
 @group(1) @binding(3) var<uniform> flip : Flip;
 
 // 这个着色器根据 |flip.value| 是 0 还是 1，在一个方向上对输入纹理进行模糊处理。
-// 它通过每个工作组运行（128 / 4）个线程，将 128 个纹素加载到共享内存的 4 行中。
 // 每个线程加载一个 4 x 4 的纹素块，以充分利用纹理采样硬件。
 // 然后，每个线程通过对共享内存中相邻纹素值取平均来计算模糊结果。
-// 因为我们在纹理的子集上操作，所以不能计算出所有结果，因为并非所有邻居在共享内存中都可用。
-// 具体来说，在 128 x 128 的图块上，我们只能计算和写出大小为 128 - (filterSize - 1) 的方块。
-// 我们通过 JavaScript 计算所需的块数，并分派相应数量的块。
 
+// <workgroup> 相同compute shader workgroup中的调用共享变量
 var<workgroup> tile : array<array<vec3<f32>, 128>, 4>;
 
 @compute @workgroup_size(32, 1, 1)
@@ -29,10 +26,17 @@ fn main(
     @builtin(workgroup_id) WorkGroupID : vec3<u32>,
     @builtin(local_invocation_id) LocalInvocationID : vec3<u32>
 ) {
-    // 模糊操作会使用一个滤波器来计算邻近像素的平均值，而这个偏移量用于确定滤波器的中心和周围的像素位置。
     let filterOffset = (params.filterDim - 1) / 2;
+    /**
+    * textureDimensions(t: texture_2d<T>, level: i32) -> vec2<i32>
+    * 返回纹理的尺寸，或以 texels 为单位的纹理的 mip 级别。
+    * @param t:	sampled, multisampled， depth, storage，或者 external 纹理。
+    * @param level:	mip 级别，级别 0 包含纹理的全尺寸版本。如果省略，则返回级别 0 的维度。
+    */
     let dims = vec2<i32>(textureDimensions(inputTex, 0));
     // 确定每个线程应该从输入纹理中加载哪些像素
+    // 调用的本地调用ID local invocation ID 是调用对应的工作组网格点的坐标三元组。
+    // 假设对于一个 128 x 128的计算任务中，如果workgroup_size为(4, 4, 4)，那么global_id 为 (x=6, y=6, z=0) 对应的local_invocation_id就是 (x=2, y=2, z=0)，workgroup_id为 (x=1, y=1, z=0)
     let baseIndex = vec2<i32>(WorkGroupID.xy * vec2(params.blockDim, 4) +
                                 LocalInvocationID.xy * vec2(4, 1))
                     - vec2(filterOffset, 0);
@@ -50,6 +54,14 @@ fn main(
         // 代码使用 textureSampleLevel 函数从输入纹理 inputTex 中进行采样
         // 采样的位置是由 loadIndex 计算得到的，稍微偏移了一点（vec2<f32>(0.25, 0.25)）以获得更平滑的采样。
         // 4 * LocalInvocationID.x + u32(c) 是要存储的位置。
+        /**
+         * textureSampleLevel(t: texture_2d<f32>, s: sampler, coords: vec2<f32>, level: f32) -> vec4<f32>
+         * 使用显式 mip 级别或 mip 级别 0 对纹理进行采样。
+         * @param t:	要采样的 sampled 或 depth 纹理。
+         * @param s:	sampler type.
+         * @param coords:	用于采样的纹理坐标。
+         * @param level:	mip 级别，级别 0 包含纹理的全尺寸版本。 对于 level 是 f32 的函数，如果格式是可过滤的，则可以在两个级别之间插入小数值根据 Texture Format Capabilities。如果未指定，则对 mip 级别 0 进行采样。
+         */
         tile[r][4 * LocalInvocationID.x + u32(c)] = textureSampleLevel(
             inputTex,
             samp,
@@ -70,24 +82,24 @@ fn main(
     // 每个线程会根据加载的纹理块数据计算模糊结果
     for (var r = 0; r < 4; r++) {
         for (var c = 0; c < 4; c++) {
-        var writeIndex = baseIndex + vec2(c, r);
-        if (flip.value != 0) {
-            writeIndex = writeIndex.yx;
-        }
-        // 计算当前像素在 4x4 块中的中心位置。
-        let center = i32(4 * LocalInvocationID.x) + c;
-        if (center >= filterOffset &&
-            center < 128 - filterOffset &&
-            all(writeIndex < dims)) {          // 确保不越界并且所有索引都在有效范围内
-                var acc = vec3(0.0, 0.0, 0.0);
-                // 计算模糊结果。
-                for (var f = 0; f < params.filterDim; f++) {
-                    var i = center + f - filterOffset;
-                    acc = acc + (1.0 / f32(params.filterDim)) * tile[r][i];
-                }
-                // 将模糊结果存储到输出纹理中。
-                textureStore(outputTex, writeIndex, vec4(acc, 1.0));
-        }
+            var writeIndex = baseIndex + vec2(c, r);
+            if (flip.value != 0) {
+                writeIndex = writeIndex.yx;
+            }
+            // 计算当前像素在 4x4 块中的中心位置。
+            let center = i32(4 * LocalInvocationID.x) + c;
+            if (center >= filterOffset &&
+                center < 128 - filterOffset &&
+                all(writeIndex < dims)) {          // 确保不越界并且所有索引都在有效范围内
+                    var acc = vec3(0.0, 0.0, 0.0);
+                    // 计算模糊结果。
+                    for (var f = 0; f < params.filterDim; f++) {
+                        var i = center + f - filterOffset;
+                        acc = acc + (1.0 / f32(params.filterDim)) * tile[r][i];
+                    }
+                    // 将模糊结果存储到输出纹理中。
+                    textureStore(outputTex, writeIndex, vec4(acc, 1.0));
+            }
         }
     }
 }
