@@ -39,6 +39,7 @@
 | vol5_objects_light_layout           | 带有基础照明的多个物体（创建 pipeline 时指定 layout 而非使用 auto） |
 | vol6_shadowMapping                  | 利用阴影贴图实现实时阴影                                            |
 | vol7_computeShader                  | 利用计算着色器模拟数十万物体动态移动                                |
+| vol8_worker                         | 使用 worker 线程进行渲染                                            |
 | proj1_gameOfLife                    | 生命游戏                                                            |
 | proj2_firework                      | 简易烟花 与 wgsl 中对齐尺寸说明                                     |
 | proj3_imageBlur                     | 简易图像均值模糊                                                    |
