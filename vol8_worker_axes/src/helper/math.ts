@@ -43,15 +43,15 @@ const up = vec3.fromValues(0, 1, 0);
 // aspect：摄像机的视口宽度和高度之比
 // fov：摄像机的视场角，单位为弧度。默认值是 60 度
 // near 和 far：这是摄像机视锥体的近裁剪面和远裁剪面。所有距摄像机更近或更远的对象都不会被渲染。默认值分别为 0.1 和 100.0。
-// position：这是摄像机在世界空间中的位置
+// eyePosition：这是摄像机在世界空间中的位置
 function getViewProjectionMatrix(
   aspect: number,
   fov: number = (60 / 180) * Math.PI,
   near: number = 0.1,
   far: number = 100.0,
-  position = { x: 0, y: 0, z: -10 }
+  eyePosition = { x: 0, y: 0, z: -10 }
 ) {
-  const eye = vec3.fromValues(position.x, position.y, position.z); // 将摄像机的位置从 {x, y, z} 对象转换为一个 3 组件向量。
+  const eye = vec3.fromValues(eyePosition.x, eyePosition.y, eyePosition.z); // 将摄像机的位置从 {x, y, z} 对象转换为一个 3 组件向量。
   const projectionMatrix = mat4.perspective(fov, aspect, near, far); // 创建一个透视投影矩阵
   const viewMatrix = mat4.lookAt(eye, center, up);
   const viewProjectionMatrix = mat4.multiply(projectionMatrix, viewMatrix); //将投影矩阵和视图矩阵相乘，得到一个可以同时应用摄像机位置和投影的矩阵。

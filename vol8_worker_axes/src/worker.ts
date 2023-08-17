@@ -1,17 +1,5 @@
-import vertWGSL from "./shader/vert.wgsl?raw";
-import fragWGSL from "./shader/frag.wgsl?raw";
-import axesVertWGSL from "./shader/axes.vert.wgsl?raw";
-import axesFragWGSL from "./shader/axes.frag.wgsl?raw";
-import { getMvpMatrix } from "./helper/math";
-import { CreateGPUBuffer } from "./helper/gpuBuffer";
-import {
-  cubeVertexArray,
-  cubeVertexSize,
-  cubeUVOffset,
-  cubePositionOffset,
-  cubeVertexCount,
-  axesVertexArray,
-} from "./helper/cube";
+import Cube from "./components/Cube";
+import Axes from "./components/Axes";
 
 // 监听来自主线程的 'init' 消息，该消息将包含从页面传输的 OffscreenCanvas
 // 将其用作开始 WebGPU 初始化的信号。
@@ -51,121 +39,8 @@ const init = async (canvas: HTMLCanvasElement) => {
   });
   const size = { width: canvas.width, height: canvas.height };
 
-  const vertexBuffer = CreateGPUBuffer(device, cubeVertexArray);
-  const axesVertexBuffer = CreateGPUBuffer(device, axesVertexArray);
-
-  const pipeline = device.createRenderPipeline({
-    // 布局
-    layout: "auto",
-    // 顶点着色器
-    vertex: {
-      module: device.createShaderModule({
-        code: vertWGSL,
-      }),
-      entryPoint: "main",
-      buffers: [
-        // 缓冲区集合，其中一个元素对应一个缓冲对象
-        {
-          arrayStride: cubeVertexSize, // 顶点长度 以字节为单位
-          attributes: [
-            // position
-            {
-              shaderLocation: 0,
-              offset: cubePositionOffset,
-              format: "float32x4",
-            },
-            // uv
-            {
-              shaderLocation: 1,
-              offset: cubeUVOffset,
-              format: "float32x2",
-            },
-          ],
-        },
-      ],
-    },
-    // 片元着色器
-    fragment: {
-      module: device.createShaderModule({
-        code: fragWGSL,
-      }),
-      entryPoint: "main",
-      // 输出颜色
-      targets: [
-        {
-          format: format,
-        },
-      ],
-    },
-    // 图元类型
-    primitive: {
-      topology: "triangle-list",
-      cullMode: "back",
-    },
-    // 深度
-    depthStencil: {
-      depthWriteEnabled: true,
-      depthCompare: "less",
-      format: "depth24plus",
-    },
-    // 多重采样
-    multisample: {
-      count: 4,
-    },
-  });
-
-  const axesPipeline = device.createRenderPipeline({
-    // 布局
-    layout: "auto",
-    // 顶点着色器
-    vertex: {
-      module: device.createShaderModule({
-        code: axesVertWGSL,
-      }),
-      entryPoint: "main",
-      buffers: [
-        // 缓冲区集合，其中一个元素对应一个缓冲对象
-        {
-          arrayStride: 4 * 4, // 顶点长度 以字节为单位
-          attributes: [
-            // position
-            {
-              shaderLocation: 0,
-              offset: 0,
-              format: "float32x4",
-            },
-          ],
-        },
-      ],
-    },
-    // 片元着色器
-    fragment: {
-      module: device.createShaderModule({
-        code: axesFragWGSL,
-      }),
-      entryPoint: "main",
-      // 输出颜色
-      targets: [
-        {
-          format: format,
-        },
-      ],
-    },
-    // 图元类型
-    primitive: {
-      topology: "line-list",
-    },
-    // 深度
-    depthStencil: {
-      depthWriteEnabled: true,
-      depthCompare: "less",
-      format: "depth24plus",
-    },
-    // 多重采样
-    multisample: {
-      count: 4,
-    },
-  });
+  const cube = new Cube(canvas, device, format);
+  const axes = new Axes(canvas, device, format);
 
   // 深度贴图
   const depthTexture = device.createTexture({
@@ -183,46 +58,15 @@ const init = async (canvas: HTMLCanvasElement) => {
   });
   const view = texture.createView();
 
-  const uniformBuffer = device.createBuffer({
-    size: 4 * 4 * 4,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const uniformBindGroup = device.createBindGroup({
-    label: "uniform",
-    layout: pipeline.getBindGroupLayout(0),
-    entries: [
-      {
-        binding: 0,
-        resource: {
-          buffer: uniformBuffer,
-        },
-      },
-    ],
-  });
-
-  const axesBindGroup = device.createBindGroup({
-    label: "axes",
-    layout: axesPipeline.getBindGroupLayout(0),
-    entries: [
-      {
-        binding: 0,
-        resource: {
-          buffer: uniformBuffer,
-        },
-      },
-    ],
-  });
-
-  const aspect = canvas.width / canvas.height;
-  const position = { x: 0, y: 0, z: 0 };
-  const scale = { x: 1, y: 1, z: 1 };
   // 渲染
   const render = () => {
     const now = Date.now() / 1000;
     const rotation = { x: Math.sin(now), y: Math.cos(now), z: 0 };
-    const mvpMatrix = getMvpMatrix(aspect, position, rotation, scale);
-    device.queue.writeBuffer(uniformBuffer, 0, mvpMatrix);
+
+    cube.setRotation(rotation);
+    axes.setScale({ x: 5, y: 5, z: 5 });
+    axes.setRotation(rotation);
+
     // 开始命令编码
     const commandEncoder = device.createCommandEncoder();
 
@@ -244,16 +88,8 @@ const init = async (canvas: HTMLCanvasElement) => {
       },
     });
     // 设置渲染管线
-    renderPass.setPipeline(pipeline);
-    renderPass.setBindGroup(0, uniformBindGroup);
-    renderPass.setVertexBuffer(0, vertexBuffer);
-    renderPass.draw(cubeVertexCount, 1);
-
-    renderPass.setPipeline(axesPipeline);
-    renderPass.setBindGroup(0, axesBindGroup);
-    renderPass.setVertexBuffer(0, axesVertexBuffer);
-    renderPass.draw(6, 1);
-
+    cube.render(renderPass);
+    axes.render(renderPass);
     // 结束渲染通道
     renderPass.end();
     // 提交命令
