@@ -1,5 +1,9 @@
 import Cube from "./components/Cube";
 import Axes from "./components/Axes";
+import { Camera } from "./components/Camera";
+
+const camera = new Camera();
+let radius: number = 10;
 
 // 监听来自主线程的 'init' 消息，该消息将包含从页面传输的 OffscreenCanvas
 // 将其用作开始 WebGPU 初始化的信号。
@@ -16,6 +20,9 @@ self.addEventListener("message", (ev: any) => {
       }
       break;
     }
+    case "updateCamera":
+      radius = ev.data.cameraConfig.radius;
+      break;
   }
 });
 
@@ -39,8 +46,13 @@ const init = async (canvas: HTMLCanvasElement) => {
   });
   const size = { width: canvas.width, height: canvas.height };
 
-  const cube = new Cube(canvas, device, format);
-  const axes = new Axes(canvas, device, format);
+  const aspect = canvas.width / canvas.height;
+  camera.aspect = aspect;
+  camera.perspective();
+  camera.lookAt({ x: 0, y: 0, z: 10 }, { x: 0, y: 0, z: 0 });
+
+  const cube = new Cube(device, format, camera);
+  const axes = new Axes(device, format, camera, 5);
 
   // 深度贴图
   const depthTexture = device.createTexture({
@@ -58,14 +70,18 @@ const init = async (canvas: HTMLCanvasElement) => {
   });
   const view = texture.createView();
 
+  cube.setRotation({ x: 1, y: 1, z: 0 });
+  axes.setRotation({ x: 1, y: 1, z: 0 });
+
   // 渲染
   const render = () => {
     const now = Date.now() / 1000;
-    const rotation = { x: Math.sin(now), y: Math.cos(now), z: 0 };
 
-    cube.setRotation(rotation);
-    axes.setScale({ x: 5, y: 5, z: 5 });
-    axes.setRotation(rotation);
+    // const rotation = { x: Math.sin(now), y: Math.cos(now), z: 0 };
+    // cube.setRotation(rotation);
+    // axes.setRotation(rotation);
+
+    camera.rotateAroundObject_xz(cube.position, radius, now);
 
     // 开始命令编码
     const commandEncoder = device.createCommandEncoder();

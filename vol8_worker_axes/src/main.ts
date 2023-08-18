@@ -1,9 +1,20 @@
 import "./style.css";
+import { GUI } from "dat.gui";
 
 // 创建一个 Worker，并通过配置项 { type: "module" } 来设置其类型为模块。
 const worker = new Worker(new URL("./worker.ts", import.meta.url), {
   type: "module",
 });
+
+// gui相关
+const gui = new GUI();
+const updateCamera = () => {
+  worker.postMessage({ type: "updateCamera", cameraConfig });
+};
+const cameraConfig = {
+  radius: 10,
+};
+gui.add(cameraConfig, "radius", 0, 20).onChange(updateCamera);
 
 // 添加一个消息监听器，处理从 Worker 接收的消息。
 worker.addEventListener("message", (ev) => {

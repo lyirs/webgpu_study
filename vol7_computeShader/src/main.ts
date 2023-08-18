@@ -1,7 +1,6 @@
 /// <reference types="@webgpu/types" />
 /// <reference types="vite/client" />
 import "./style.css";
-import { InitGPU } from "./helper/init";
 import vertWGSL from "./shader/vert.wgsl?raw";
 import fragWGSL from "./shader/frag.wgsl?raw";
 import computeWGSL from "./shader/compute.wgsl?raw";
@@ -9,6 +8,7 @@ import { getModelMatrix, getViewProjectionMatrix } from "./helper/math";
 import { CreateGPUBuffer, CreateGPUBufferUint16 } from "./helper/gpuBuffer";
 import * as box from "./helper/box";
 import { createBindGroup } from "./helper/bindGroup";
+import { InitGPU } from "./helper/init";
 
 const gpu = await InitGPU();
 const device = gpu.device;
@@ -243,6 +243,7 @@ const render = () => {
 render();
 
 import { GUI } from "dat.gui";
+
 let parameters = {
   NUM: 150000,
 };

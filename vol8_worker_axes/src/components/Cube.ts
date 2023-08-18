@@ -1,7 +1,8 @@
 import vertWGSL from "./shader/vert.wgsl?raw";
 import fragWGSL from "./shader/frag.wgsl?raw";
 import { CreateGPUBuffer } from "../helper/gpuBuffer";
-import { getMvpMatrix } from "../helper/math";
+import { Camera } from "./Camera";
+import { Mat4, mat4, vec3 } from "wgpu-matrix";
 
 const cubeVertexSize = 4 * 10;
 const cubePositionOffset = 0;
@@ -62,21 +63,15 @@ class Cube {
   public uniformBindGroup: any;
   public vertexBuffer: GPUBuffer;
   public vertexCount: number;
-  public aspect: number;
-  public position: { x: number; y: number; z: number };
-  public scale: { x: number; y: number; z: number };
-  public rotation: { x: number; y: number; z: number };
-  constructor(
-    canvas: HTMLCanvasElement,
-    device: GPUDevice,
-    format: GPUTextureFormat
-  ) {
+  public position: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
+  public scale: { x: number; y: number; z: number } = { x: 1, y: 1, z: 1 };
+  public rotation: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
+  private _camera: Camera;
+  private _modelMatrix: Mat4 = mat4.identity();
+  constructor(device: GPUDevice, format: GPUTextureFormat, camera: Camera) {
     this.device = device;
+    this._camera = camera;
 
-    this.aspect = canvas.width / canvas.height;
-    this.position = { x: 0, y: 0, z: 0 };
-    this.scale = { x: 1, y: 1, z: 1 };
-    this.rotation = { x: 1, y: 1, z: 1 };
     this.vertexBuffer = CreateGPUBuffer(device, cubeVertexArray);
 
     this.pipeline = device.createRenderPipeline({
@@ -183,17 +178,34 @@ class Cube {
   }
 
   public render(renderPass: GPURenderPassEncoder) {
-    const mvpMatrix = getMvpMatrix(
-      this.aspect,
-      this.position,
-      this.rotation,
-      this.scale
+    const vpMatrix = mat4.multiply(
+      this._camera.projectionMatrix,
+      this._camera.viewMatrix
     );
+
+    const mvpMatrix = mat4.multiply(vpMatrix, this.modelMatrix) as Float32Array;
+
     this.device.queue.writeBuffer(this.uniformBuffer, 0, mvpMatrix);
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.uniformBindGroup);
     renderPass.setVertexBuffer(0, this.vertexBuffer);
     renderPass.draw(this.vertexCount, 1);
+  }
+
+  public get modelMatrix(): Mat4 {
+    this._modelMatrix = mat4.identity();
+    this._modelMatrix = mat4.translate(
+      this._modelMatrix,
+      vec3.fromValues(this.position.x, this.position.y, this.position.z)
+    );
+    this._modelMatrix = mat4.rotateX(this._modelMatrix, this.rotation.x);
+    this._modelMatrix = mat4.rotateY(this._modelMatrix, this.rotation.y);
+    this._modelMatrix = mat4.rotateZ(this._modelMatrix, this.rotation.z);
+    this._modelMatrix = mat4.scale(
+      this._modelMatrix,
+      vec3.fromValues(this.scale.x, this.scale.y, this.scale.z)
+    );
+    return this._modelMatrix;
   }
 }
 
