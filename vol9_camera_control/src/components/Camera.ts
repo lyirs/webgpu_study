@@ -6,12 +6,18 @@ export class Camera {
   public far: number = 100.0;
   public _eyePosition = { x: 0, y: 0, z: 0 };
   private _center = { x: 0, y: 0, z: 0 };
-  private _up = { x: 0, y: 0, z: 0 };
+  private _up = { x: 0, y: 1, z: 0 };
   private _aspect;
   private _projectionMatrix: Mat4 = mat4.identity();
   private _viewMatrix: Mat4 = mat4.identity();
   private _viewProjectionMatrix: Mat4 = mat4.identity();
   private _angularSpeed: number = 0.01;
+  private _phi: number = Math.PI / 2;
+  private _theta: number = Math.PI / 2;
+
+  private static ZOOM_IN_FACTOR = 1.05;
+  private static ZOOM_OUT_FACTOR = 0.95;
+
   constructor(aspect: number = 1) {
     this._aspect = aspect;
   }
@@ -47,7 +53,7 @@ export class Camera {
   }
 
   public lookAt(
-    eyePosition = { x: 0, y: 0, z: 0 },
+    eyePosition = { x: 0, y: 0, z: -10 },
     center = { x: 0, y: 0, z: 0 },
     up = { x: 0, y: 1, z: 0 }
   ) {
@@ -84,5 +90,38 @@ export class Camera {
     const newZ = objectPosition.z + radius * Math.sin(angle);
 
     this.lookAt({ x: newX, y: this._eyePosition.y, z: newZ }, objectPosition);
+  }
+
+  public rotateAroundCenter(deltaX: number, deltaY: number) {
+    const horizontalAngle = deltaX * this._angularSpeed;
+    const verticalAngle = deltaY * this._angularSpeed;
+
+    this._theta += horizontalAngle;
+    this._phi -= verticalAngle;
+
+    this._phi = Math.max(0.1, Math.min(Math.PI - 0.1, this._phi));
+
+    const radius = vec3.distance(
+      vec3.fromValues(
+        this._eyePosition.x,
+        this._eyePosition.y,
+        this._eyePosition.z
+      ),
+      vec3.fromValues(0, 0, 0)
+    );
+
+    const x = radius * Math.sin(this._phi) * Math.cos(this._theta);
+    const y = radius * Math.cos(this._phi);
+    const z = radius * Math.sin(this._phi) * Math.sin(this._theta);
+
+    this.lookAt({ x: x, y: y, z: z }, this._center, { x: 0, y: 1, z: 0 });
+  }
+
+  public zoom(delta: number) {
+    let speed = delta > 0 ? Camera.ZOOM_IN_FACTOR : Camera.ZOOM_OUT_FACTOR;
+    this._eyePosition.x = this._eyePosition.x * speed;
+    this._eyePosition.y = this._eyePosition.y * speed;
+    this._eyePosition.z = this._eyePosition.z * speed;
+    this.lookAt(this._eyePosition, this._center, this._up);
   }
 }

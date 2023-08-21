@@ -41,6 +41,7 @@
 | vol7_computeShader                  | 利用计算着色器模拟数十万物体动态移动                                |
 | vol8_worker                         | 使用 worker 线程进行渲染                                            |
 | vol8_worker_axes                    | 添加坐标轴辅助器                                                    |
+| vol9_camera_control                 | 简易相机控制器                                                      |
 | proj1_gameOfLife                    | 生命游戏                                                            |
 | proj2_firework                      | 简易烟花 与 wgsl 中对齐尺寸说明                                     |
 | proj3_imageBlur                     | 简易图像均值模糊                                                    |
