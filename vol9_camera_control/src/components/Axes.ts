@@ -4,6 +4,7 @@ import { CreateGPUBuffer } from "../helper/gpuBuffer";
 import { Camera } from "./Camera";
 import { Mat4, mat4, vec3 } from "wgpu-matrix";
 import { RenderableObject } from "./RenderableObject";
+import { GPUManager } from "./GPUManager";
 
 // prettier-ignore
 const axesVertexArray = new Float32Array([
@@ -21,8 +22,15 @@ class Axes extends RenderableObject {
   public uniformBindGroup: any;
   public vertexBuffer: GPUBuffer;
   public vertexCount: number;
-  constructor(device: GPUDevice, format: GPUTextureFormat, length: number = 1) {
-    super(device, format);
+  public device: GPUDevice;
+  constructor(length: number = 1) {
+    super();
+    const gpuManager = GPUManager.getInstance();
+    const device = gpuManager.device as GPUDevice;
+    const format = gpuManager.format as GPUTextureFormat;
+
+    this.device = device;
+
     this.setScale({ x: length, y: length, z: length });
 
     this.vertexBuffer = CreateGPUBuffer(device, axesVertexArray);

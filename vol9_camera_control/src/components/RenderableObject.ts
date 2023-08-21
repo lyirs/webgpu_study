@@ -1,9 +1,6 @@
 import { mat4, Mat4, vec3 } from "wgpu-matrix";
-import { CreateGPUBuffer } from "../helper/gpuBuffer";
-import { Camera } from "./Camera";
 
 export class RenderableObject {
-  public device: GPUDevice;
   public uniformBuffer: any;
   public uniformBindGroup: any;
   public position: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
@@ -11,9 +8,7 @@ export class RenderableObject {
   public rotation: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
   protected _modelMatrix: Mat4 = mat4.identity();
 
-  constructor(device: GPUDevice, format: GPUTextureFormat) {
-    this.device = device;
-  }
+  constructor() {}
 
   public set(
     position: { x: number; y: number; z: number },

@@ -1,9 +1,10 @@
-import vertWGSL from "./shader/vert.wgsl?raw";
-import fragWGSL from "./shader/frag.wgsl?raw";
+import vertWGSL from "./shader/cube.vert.wgsl?raw";
+import fragWGSL from "./shader/cube.frag.wgsl?raw";
 import { CreateGPUBuffer } from "../helper/gpuBuffer";
 import { Camera } from "./Camera";
 import { Mat4, mat4, vec3 } from "wgpu-matrix";
 import { RenderableObject } from "./RenderableObject";
+import { GPUManager } from "./GPUManager";
 
 const cubeVertexSize = 4 * 10;
 const cubePositionOffset = 0;
@@ -63,8 +64,14 @@ class Cube extends RenderableObject {
   public uniformBindGroup: any;
   public vertexBuffer: GPUBuffer;
   public vertexCount: number;
-  constructor(device: GPUDevice, format: GPUTextureFormat) {
-    super(device, format);
+  public device: GPUDevice;
+  constructor() {
+    super();
+    const gpuManager = GPUManager.getInstance();
+    const device = gpuManager.device as GPUDevice;
+    const format = gpuManager.format as GPUTextureFormat;
+
+    this.device = device;
     this.vertexBuffer = CreateGPUBuffer(device, cubeVertexArray);
 
     this.pipeline = device.createRenderPipeline({

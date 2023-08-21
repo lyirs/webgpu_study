@@ -38,6 +38,6 @@ export class CameraController {
   }
 
   private handleMouseWheel(e: WheelEvent) {
-    this.camera.zoom(e.deltaY);
+    this.camera.mouseZoom(e.deltaY);
   }
 }

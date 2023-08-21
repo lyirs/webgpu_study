@@ -1,13 +1,9 @@
 import { mat4, Mat4, vec3 } from "wgpu-matrix";
 
 export class Camera {
-  public fov: number = (60 / 180) * Math.PI;
-  public near: number = 0.1;
-  public far: number = 100.0;
   public _eyePosition = { x: 0, y: 0, z: 0 };
   private _center = { x: 0, y: 0, z: 0 };
   private _up = { x: 0, y: 1, z: 0 };
-  private _aspect;
   private _projectionMatrix: Mat4 = mat4.identity();
   private _viewMatrix: Mat4 = mat4.identity();
   private _viewProjectionMatrix: Mat4 = mat4.identity();
@@ -18,13 +14,7 @@ export class Camera {
   private static ZOOM_IN_FACTOR = 1.05;
   private static ZOOM_OUT_FACTOR = 0.95;
 
-  constructor(aspect: number = 1) {
-    this._aspect = aspect;
-  }
-
-  public set aspect(aspect: number) {
-    this._aspect = aspect;
-  }
+  constructor() {}
 
   public get projectionMatrix(): Mat4 {
     return this._projectionMatrix;
@@ -34,13 +24,25 @@ export class Camera {
     this._projectionMatrix = matrix;
   }
 
-  public perspective() {
-    const projectionMatrix = mat4.perspective(
-      this.fov,
-      this._aspect,
-      this.near,
-      this.far
-    ); // 创建一个透视投影矩阵
+  public perspective(
+    aspect: number = 1,
+    fov: number = (60 / 180) * Math.PI,
+    near: number = 0.1,
+    far: number = 100.0
+  ) {
+    const projectionMatrix = mat4.perspective(fov, aspect, near, far); // 创建一个透视投影矩阵
+    this._projectionMatrix = projectionMatrix;
+  }
+
+  public ortho(
+    left: number,
+    right: number,
+    bottom: number,
+    top: number,
+    near: number = 1,
+    far: number = 1000
+  ) {
+    const projectionMatrix = mat4.ortho(left, right, bottom, top, near, far); // 创建一个正交投影矩阵
     this._projectionMatrix = projectionMatrix;
   }
 
@@ -99,7 +101,7 @@ export class Camera {
     this._theta += horizontalAngle;
     this._phi -= verticalAngle;
 
-    this._phi = Math.max(0.1, Math.min(Math.PI - 0.1, this._phi));
+    this._phi = Math.max(0.01, Math.min(Math.PI - 0.01, this._phi));
 
     const radius = vec3.distance(
       vec3.fromValues(
@@ -117,11 +119,24 @@ export class Camera {
     this.lookAt({ x: x, y: y, z: z }, this._center, { x: 0, y: 1, z: 0 });
   }
 
-  public zoom(delta: number) {
+  public mouseZoom(delta: number) {
     let speed = delta > 0 ? Camera.ZOOM_IN_FACTOR : Camera.ZOOM_OUT_FACTOR;
     this._eyePosition.x = this._eyePosition.x * speed;
     this._eyePosition.y = this._eyePosition.y * speed;
     this._eyePosition.z = this._eyePosition.z * speed;
     this.lookAt(this._eyePosition, this._center, this._up);
+  }
+
+  public getEyePositionFromViewMatrix() {
+    const invView = mat4.invert(this._viewMatrix);
+    if (!invView) {
+      throw new Error("Failed to invert the view matrix");
+    }
+    const eyePosition = {
+      x: invView[12],
+      y: invView[13],
+      z: invView[14],
+    };
+    return eyePosition;
   }
 }
