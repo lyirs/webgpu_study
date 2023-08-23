@@ -19,8 +19,8 @@ const SpherePosition = (
 
 export const SphereWireframeData = (
   radius: number,
-  u: number,
-  v: number,
+  u: number, // 经度分段数
+  v: number, // 纬度分段数
   center: any = [0, 0, 0]
 ) => {
   if (u < 2 || v < 2) return;
