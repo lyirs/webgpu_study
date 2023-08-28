@@ -192,7 +192,6 @@ const colorBufferArray = new Float32Array(NUM * 4);
   const rotation = { x: 0, y: Math.PI / 4, z: 0 };
   const scale = { x: 2, y: 20, z: 2 };
   const model = getModelMatrix(position, rotation, scale);
-  // 相机不移动，不绑定view matrix
   modelBufferArray.set(model, 0 * 4 * 4);
   colorBufferArray.set([0.5, 0.5, 0.5, 1], 0 * 4);
 }

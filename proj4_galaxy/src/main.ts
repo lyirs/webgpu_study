@@ -67,7 +67,7 @@ const params = {
   endColor: "#1b3984",
 };
 
-// 注意 这里结构体为vec3,f32,f32,f32 根据字节对齐规则，这里实际的size为32而不是24 （vec3 的align为16，结构体大小必须是16的倍数，所以需要补size8）
+// 注意 这里结构体为vec3,f32,f32,f32 根据内存地址对齐规则，这里实际的size为32而不是24 （vec3 的align为16，结构体大小必须是16的倍数，所以需要补size8）
 // struct Particle {
 //   position : vec3<f32>,
 //   r: f32,

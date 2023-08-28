@@ -43,7 +43,7 @@
 | vol8_worker_axes                    | 添加坐标轴辅助器                                                    |
 | vol9_camera_control                 | 简易相机控制器                                                      |
 | proj1_gameOfLife                    | 生命游戏                                                            |
-| proj2_firework                      | 简易烟花 与 wgsl 中对齐尺寸说明                                     |
+| proj2_firework                      | 简易烟花 与 wgsl 中内存地址对齐说明                                 |
 | proj3_imageBlur                     | 简易图像均值模糊                                                    |
 | proj4_galaxy                        | 简易银河                                                            |
 
@@ -74,7 +74,7 @@
 <div>
 </div>
 
-- [偏移量计算工具网站](https://webgpufundamentals.org/webgpu/lessons/resources/wgsl-offset-computer.html)
+- [内存地址对齐计算工具网站](https://webgpufundamentals.org/webgpu/lessons/resources/wgsl-offset-computer.html)
 
 <hr/>
 

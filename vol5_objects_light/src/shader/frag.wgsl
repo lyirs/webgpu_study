@@ -4,15 +4,15 @@
 
 @fragment
 fn main(
-    @location(0) fragPosition : vec3<f32>,
+    @location(0) fragPosition: vec3<f32>,
     @location(1) fragNormal: vec3<f32>,
     @location(2) fragUV: vec2<f32>,
     @location(3) fragColor: vec4<f32>
 ) -> @location(0) vec4<f32> {
     let objectColor = fragColor.rgb;
-    let ambintLightColor = vec3(1.0,1.0,1.0);  // 环境光
-    let pointLightColor = vec3(1.0,1.0,1.0);  // 点光源
-    let dirLightColor = vec3(1.0,1.0,1.0);  // 直射光
+    let ambintLightColor = vec3(1.0, 1.0, 1.0);  // 环境光
+    let pointLightColor = vec3(1.0, 1.0, 1.0);  // 点光源
+    let dirLightColor = vec3(1.0, 1.0, 1.0);  // 直射光
 
     var lightResult = vec3(0.0, 0.0, 0.0);
     // ambient
@@ -39,7 +39,7 @@ fn main(
     var pointRadius: f32 = pointLight[1][1];
     var L = pointPosition - fragPosition;
     var distance = length(L);
-    if(distance < pointRadius){
+    if distance < pointRadius {
         // 点光源对于片元的漫反射强度
         var diffuse: f32 = max(dot(normalize(L), fragNormal), 0.0);
         // 距离因子distanceFactor，用于表达随着距离的增加，光源对物体的照明强度的衰减

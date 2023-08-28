@@ -160,4 +160,4 @@ var<uniform> uniform_buffer: B;
 ```
 
 
-[字节对齐 偏移量计算工具网站](https://webgpufundamentals.org/webgpu/lessons/resources/wgsl-offset-computer.html)
+[内存地址对齐 偏移量计算工具网站](https://webgpufundamentals.org/webgpu/lessons/resources/wgsl-offset-computer.html)
