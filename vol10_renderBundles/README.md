@@ -23,11 +23,13 @@ const renderBundleEncoder = device.createRenderBundleEncoder(descriptor);
 ```
 
 - descriptor: 一个对象，描述了渲染束编码器的配置。它包括以下属性：
-- colorFormats: 一个数组，列出了渲染目标的颜色格式。
-- depthStencilFormat (可选): 深度/模板附件的格式。
-- sampleCount (可选): 多重采样的数量，默认为 1。
 
-1.创建渲染束编码器:
+  - colorFormats: 一个数组，列出了渲染目标的颜色格式。
+  - depthStencilFormat (可选): 深度/模板附件的格式。
+  - sampleCount (可选): 多重采样的数量，默认为 1。
+
+  1.创建渲染束编码器:
+
 ```
 const renderBundleEncoder = device.createRenderBundleEncoder({
   colorFormats: ['rgba8unorm'],
@@ -37,7 +39,8 @@ const renderBundleEncoder = device.createRenderBundleEncoder({
 
 2.编码渲染命令:
 
-使用渲染束编码器的方法（如setPipeline, setVertexBuffer等）来编码渲染命令。
+使用渲染束编码器的方法（如 setPipeline, setVertexBuffer 等）来编码渲染命令。
+
 ```
 renderBundleEncoder.setPipeline(pipeline);
 renderBundleEncoder.setVertexBuffer(0, vertexBuffer);
@@ -45,14 +48,15 @@ renderBundleEncoder.setVertexBuffer(0, vertexBuffer);
 ```
 
 3.完成渲染束:
+
 ```
 const renderBundle = renderBundleEncoder.finish();
 ```
 
 4.在渲染过程中使用渲染束:
 
-在渲染过程中，使用executeBundles方法执行预先录制的渲染束。
+在渲染过程中，使用 executeBundles 方法执行预先录制的渲染束。
+
 ```
 renderPassEncoder.executeBundles([renderBundle]);
 ```
-
