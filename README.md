@@ -52,6 +52,22 @@
 
 <hr/>
 
+📚 **我的 wgsl shadertoy** 📚
+
+</h3>
+
+<div align="center">
+
+[shadertoy 在线游玩](https://lyirs.github.io/my-webgpu-shadertoy/dist/)
+
+[github 仓库](https://github.com/lyirs/my-webgpu-shadertoy)
+
+</div>
+
+<h3 align="center">
+
+<hr/>
+
 💡 **一些网站** 💡
 
 </h3>
