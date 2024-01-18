@@ -38,6 +38,7 @@
 | vol5_objects_light                  | 带有基础照明的多个物体                                              |
 | vol5_objects_light_layout           | 带有基础照明的多个物体（创建 pipeline 时指定 layout 而非使用 auto） |
 | vol6_shadowMapping                  | 利用阴影贴图实现实时阴影                                            |
+| vol6_shadowMapping_two_lights       | 两个光源下的阴影处理                                                |
 | vol7_computeShader                  | 利用计算着色器模拟数十万物体动态移动                                |
 | vol8_worker                         | 使用 worker 线程进行渲染                                            |
 | vol8_worker_axes                    | 添加坐标轴辅助器                                                    |
