@@ -47,6 +47,7 @@
 | proj1_gameOfLife                    | 生命游戏                                                            |
 | proj2_firework                      | 简易烟花 与 wgsl 中内存地址对齐说明                                 |
 | proj3_imageBlur                     | 简易图像均值模糊                                                    |
+| proj3_imageBlur_Gaussian            | 基于亮度的高斯模糊                                                  |
 | proj4_galaxy                        | 简易银河                                                            |
 
 <h3 align="center">
