@@ -5,7 +5,6 @@ import { Camera } from "./Camera";
 import { Mat4, mat4, vec3 } from "wgpu-matrix";
 import { RenderableObject } from "./RenderableObject";
 import { GPUManager } from "./GPUManager";
-import { InputHandler } from "./Input";
 
 // prettier-ignore
 const axesVertexArray = new Float32Array([
@@ -110,19 +109,10 @@ class Axes extends RenderableObject {
     this.vertexCount = 6;
   }
 
-  public render(
-    renderPass: GPURenderPassEncoder,
-    camera: Camera,
-    deltaTime: number,
-    inputHandler: InputHandler
-  ) {
-    const vpMatrix = mat4.multiply(
-      camera.projectionMatrix,
-      camera.update(deltaTime, inputHandler())
-    );
+  public render(renderPass: GPURenderPassEncoder, camera: Camera) {
+    const vpMatrix = mat4.multiply(camera.projectionMatrix, camera.viewMatrix);
 
     const mvpMatrix = mat4.multiply(vpMatrix, this.modelMatrix) as Float32Array;
-
     this.device.queue.writeBuffer(this.uniformBuffer, 0, mvpMatrix);
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.uniformBindGroup);

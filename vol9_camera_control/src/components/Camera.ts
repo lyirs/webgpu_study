@@ -1,142 +1,168 @@
-import { mat4, Mat4, vec3 } from "wgpu-matrix";
+import { mat4, Mat4, Vec3, vec3, Vec4 } from "wgpu-matrix";
+import { GPUManager } from "./GPUManager";
+import Input from "./Input";
 
-export class Camera {
-  public _eyePosition = { x: 0, y: 0, z: 0 };
-  private _center = { x: 0, y: 0, z: 0 };
-  private _up = { x: 0, y: 1, z: 0 };
-  private _projectionMatrix: Mat4 = mat4.identity();
-  private _viewMatrix: Mat4 = mat4.identity();
-  private _viewProjectionMatrix: Mat4 = mat4.identity();
-  private _angularSpeed: number = 0.01;
-  private _phi: number = Math.PI / 2;
-  private _theta: number = Math.PI / 2;
+interface CameraInterface {
+  update(deltaTime: number, input: Input): Mat4;
+  matrix: Mat4;
+  right: Vec4;
+  up: Vec4;
+  back: Vec4;
+  position: Vec4;
+}
 
-  private static ZOOM_IN_FACTOR = 1.05;
-  private static ZOOM_OUT_FACTOR = 0.95;
+export class CameraBase {
+  private _matrix = new Float32Array([
+    1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+  ]);
 
-  constructor() {}
+  private readonly _view: Mat4 = mat4.create();
+  private _right = new Float32Array(this._matrix.buffer, 4 * 0, 4);
+  private _up = new Float32Array(this._matrix.buffer, 4 * 4, 4);
+  private _back = new Float32Array(this._matrix.buffer, 4 * 8, 4);
+  private _position = new Float32Array(this._matrix.buffer, 4 * 12, 4);
+  public _aspect = 1;
 
-  public get projectionMatrix(): Mat4 {
-    return this._projectionMatrix;
+  set aspect(aspect: number) {
+    this._aspect = aspect;
   }
 
-  public set projectionMatrix(matrix: Mat4) {
-    this._projectionMatrix = matrix;
+  get projectionMatrix(): Mat4 {
+    return mat4.perspective((2 * Math.PI) / 5, this._aspect, 1, 100.0);
   }
 
-  public perspective(
-    aspect: number = 1,
-    fov: number = (60 / 180) * Math.PI,
-    near: number = 0.1,
-    far: number = 100.0
-  ) {
-    const projectionMatrix = mat4.perspective(fov, aspect, near, far); // 创建一个透视投影矩阵
-    this._projectionMatrix = projectionMatrix;
+  get matrix() {
+    return this._matrix;
   }
 
-  public ortho(
-    left: number,
-    right: number,
-    bottom: number,
-    top: number,
-    near: number = 1,
-    far: number = 1000
-  ) {
-    const projectionMatrix = mat4.ortho(left, right, bottom, top, near, far); // 创建一个正交投影矩阵
-    this._projectionMatrix = projectionMatrix;
+  set matrix(mat: Mat4) {
+    mat4.copy(mat, this._matrix);
   }
 
-  public get viewMatrix(): Mat4 {
-    return this._viewMatrix;
+  get view() {
+    return this._view;
   }
 
-  public set viewMatrix(matrix: Mat4) {
-    this._viewMatrix = matrix;
+  set view(mat: Mat4) {
+    mat4.copy(mat, this._view);
   }
 
-  public lookAt(
-    eyePosition = { x: 0, y: 0, z: -10 },
-    center = { x: 0, y: 0, z: 0 },
-    up = { x: 0, y: 1, z: 0 }
-  ) {
-    const viewMatrix = mat4.lookAt(
-      vec3.fromValues(eyePosition.x, eyePosition.y, eyePosition.z),
-      vec3.fromValues(center.x, center.y, center.z),
-      vec3.fromValues(up.x, up.y, up.z)
-    );
-    this._eyePosition = eyePosition;
-    this._center = center;
-    this._up = up;
-    this._viewMatrix = viewMatrix;
+  get right() {
+    return this._right;
   }
 
-  public get viewProjectionMatrix(): Mat4 {
-    const viewMatrix = this._viewMatrix;
-    const projectionMatrix = this._projectionMatrix;
-    this._viewProjectionMatrix = mat4.multiply(projectionMatrix, viewMatrix);
-    return this._viewProjectionMatrix;
+  set right(vec: Vec3) {
+    vec3.copy(vec, this._right);
   }
 
-  public set eye(eye: { x: 0; y: 0; z: 0 }) {
-    this._eyePosition = eye;
+  get up() {
+    return this._up;
   }
 
-  public rotateAroundObject_xz(
-    objectPosition: { x: number; y: number; z: number },
-    radius: number,
-    deltaTime: number
-  ) {
-    const angularSpeed = 0.5;
-    const angle = angularSpeed * deltaTime;
-    const newX = objectPosition.x + radius * Math.cos(angle);
-    const newZ = objectPosition.z + radius * Math.sin(angle);
-
-    this.lookAt({ x: newX, y: this._eyePosition.y, z: newZ }, objectPosition);
+  set up(vec: Vec3) {
+    vec3.copy(vec, this._up);
   }
 
-  public rotateAroundCenter(deltaX: number, deltaY: number) {
-    const horizontalAngle = deltaX * this._angularSpeed;
-    const verticalAngle = deltaY * this._angularSpeed;
-
-    this._theta += horizontalAngle;
-    this._phi -= verticalAngle;
-
-    this._phi = Math.max(0.01, Math.min(Math.PI - 0.01, this._phi));
-
-    const radius = vec3.distance(
-      vec3.fromValues(
-        this._eyePosition.x,
-        this._eyePosition.y,
-        this._eyePosition.z
-      ),
-      vec3.fromValues(0, 0, 0)
-    );
-
-    const x = radius * Math.sin(this._phi) * Math.cos(this._theta);
-    const y = radius * Math.cos(this._phi);
-    const z = radius * Math.sin(this._phi) * Math.sin(this._theta);
-
-    this.lookAt({ x: x, y: y, z: z }, this._center, { x: 0, y: 1, z: 0 });
+  get back() {
+    return this._back;
   }
 
-  public mouseZoom(delta: number) {
-    let speed = delta > 0 ? Camera.ZOOM_IN_FACTOR : Camera.ZOOM_OUT_FACTOR;
-    this._eyePosition.x = this._eyePosition.x * speed;
-    this._eyePosition.y = this._eyePosition.y * speed;
-    this._eyePosition.z = this._eyePosition.z * speed;
-    this.lookAt(this._eyePosition, this._center, this._up);
+  set back(vec: Vec3) {
+    vec3.copy(vec, this._back);
   }
 
-  public getEyePositionFromViewMatrix() {
-    const invView = mat4.invert(this._viewMatrix);
-    if (!invView) {
-      throw new Error("Failed to invert the view matrix");
+  get position() {
+    return this._position;
+  }
+
+  set position(vec: Vec3) {
+    vec3.copy(vec, this._position);
+  }
+}
+
+export class Camera extends CameraBase implements CameraInterface {
+  private distance = 0;
+  private angularVelocity = 0;
+  private _axis = vec3.create();
+  public rotationSpeed = 1;
+  public zoomSpeed = 0.1;
+  public frictionCoefficient = 0.999;
+
+  constructor(position?: Vec3) {
+    super();
+    if (position) {
+      this.position = position;
+      this.distance = vec3.len(this.position);
+      this.back = vec3.normalize(this.position);
+      this.recalcuateRight();
+      this.recalcuateUp();
     }
-    const eyePosition = {
-      x: invView[12],
-      y: invView[13],
-      z: invView[14],
-    };
-    return eyePosition;
   }
+
+  get axis() {
+    return this._axis;
+  }
+
+  set axis(vec: Vec3) {
+    vec3.copy(vec, this._axis);
+  }
+
+  get matrix() {
+    return super.matrix;
+  }
+
+  set matrix(mat: Mat4) {
+    super.matrix = mat;
+    this.distance = vec3.len(this.position);
+  }
+
+  update(deltaTime: number, input: Input): Mat4 {
+    const epsilon = 0.00000001;
+
+    if (input.analog.touching) {
+      // Currently being dragged.
+      this.angularVelocity = 0;
+    } else {
+      // Dampen any existing angular velocity
+      this.angularVelocity *= Math.pow(1 - this.frictionCoefficient, deltaTime);
+    }
+
+    const movement = vec3.create();
+    vec3.addScaled(movement, this.right, input.analog.x, movement);
+    vec3.addScaled(movement, this.up, -input.analog.y, movement);
+
+    const crossProduct = vec3.cross(movement, this.back);
+    const magnitude = vec3.length(crossProduct);
+
+    if (magnitude > epsilon) {
+      this.axis = vec3.scale(crossProduct, 1 / magnitude);
+      this.angularVelocity = magnitude * this.rotationSpeed;
+    }
+
+    const rotationAngle = this.angularVelocity * deltaTime;
+    if (rotationAngle > epsilon) {
+      this.back = vec3.normalize(rotate(this.back, this.axis, rotationAngle));
+      this.recalcuateRight();
+      this.recalcuateUp();
+    }
+
+    if (input.analog.zoom !== 0) {
+      this.distance *= 1 + input.analog.zoom * this.zoomSpeed;
+    }
+    this.position = vec3.scale(this.back, this.distance);
+    this.view = mat4.invert(this.matrix);
+    return this.view;
+  }
+
+  recalcuateRight() {
+    this.right = vec3.normalize(vec3.cross(this.up, this.back));
+  }
+
+  recalcuateUp() {
+    this.up = vec3.normalize(vec3.cross(this.back, this.right));
+  }
+}
+
+function rotate(vec: Vec3, axis: Vec3, angle: number): Vec3 {
+  return vec3.transformMat4Upper3x3(vec, mat4.rotation(axis, angle));
 }

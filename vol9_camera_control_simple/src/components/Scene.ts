@@ -1,5 +1,4 @@
 import { GPUManager } from "./GPUManager";
-import { InputHandler } from "./Input";
 
 export class Scene {
   private objects: any[] = []; // 保存场景中的所有对象
@@ -40,7 +39,7 @@ export class Scene {
     this.objects.push(object);
   }
 
-  render(camera: any, deltaTime: number, inputHandler: InputHandler) {
+  render(camera: any) {
     const commandEncoder = this.device.createCommandEncoder();
 
     const renderPass = commandEncoder.beginRenderPass({
@@ -63,7 +62,7 @@ export class Scene {
 
     this.objects.forEach((object) => {
       if (object.render) {
-        object.render(renderPass, camera, deltaTime, inputHandler);
+        object.render(renderPass, camera);
       }
     });
 

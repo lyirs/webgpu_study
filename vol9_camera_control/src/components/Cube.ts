@@ -5,6 +5,7 @@ import { Camera } from "./Camera";
 import { Mat4, mat4, vec3 } from "wgpu-matrix";
 import { RenderableObject } from "./RenderableObject";
 import { GPUManager } from "./GPUManager";
+import { InputHandler } from "./Input";
 
 const cubeVertexSize = 4 * 10;
 const cubePositionOffset = 0;
@@ -155,8 +156,16 @@ class Cube extends RenderableObject {
     this.vertexCount = cubeVertexCount;
   }
 
-  public render(renderPass: GPURenderPassEncoder, camera: Camera) {
-    const vpMatrix = mat4.multiply(camera.projectionMatrix, camera.viewMatrix);
+  public render(
+    renderPass: GPURenderPassEncoder,
+    camera: Camera,
+    deltaTime: number,
+    inputHandler: InputHandler
+  ) {
+    const vpMatrix = mat4.multiply(
+      camera.projectionMatrix,
+      camera.update(deltaTime, inputHandler())
+    );
 
     const mvpMatrix = mat4.multiply(vpMatrix, this.modelMatrix) as Float32Array;
 
