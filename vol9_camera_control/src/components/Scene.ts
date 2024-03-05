@@ -1,5 +1,5 @@
 import { GPUManager } from "./GPUManager";
-import { InputHandler } from "./Input";
+import InputManager from "./InputManager";
 
 export class Scene {
   private objects: any[] = []; // 保存场景中的所有对象
@@ -9,14 +9,15 @@ export class Scene {
 
   private depthTexture: GPUTexture; // 记录深度贴图
   private view: GPUTextureView; // 记录视图
+  private input: InputManager;
 
   constructor() {
     const gpuManager = GPUManager.getInstance();
     this.device = gpuManager.device as GPUDevice;
     this.context = gpuManager.context as GPUCanvasContext;
     this.format = gpuManager.format as GPUTextureFormat;
-
     const canvas = gpuManager.canvas as HTMLCanvasElement;
+    this.input = InputManager.getInstance(canvas);
     const size = { width: canvas.width, height: canvas.height };
 
     this.depthTexture = this.device.createTexture({
@@ -40,7 +41,7 @@ export class Scene {
     this.objects.push(object);
   }
 
-  render(camera: any, deltaTime: number, inputHandler: InputHandler) {
+  render(camera: any, deltaTime: number) {
     const commandEncoder = this.device.createCommandEncoder();
 
     const renderPass = commandEncoder.beginRenderPass({
@@ -63,7 +64,7 @@ export class Scene {
 
     this.objects.forEach((object) => {
       if (object.render) {
-        object.render(renderPass, camera, deltaTime, inputHandler);
+        object.render(renderPass, camera, deltaTime, this.input);
       }
     });
 

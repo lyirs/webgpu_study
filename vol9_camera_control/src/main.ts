@@ -2,7 +2,6 @@ import "./style.css";
 import Cube from "./components/Cube";
 import Axes from "./components/Axes";
 import { Camera } from "./components/Camera";
-import { createInputHandler } from "./components/Input";
 import { GPUManager } from "./components/GPUManager";
 import { Scene } from "./components/Scene";
 import { vec3 } from "wgpu-matrix";
@@ -10,7 +9,6 @@ import { vec3 } from "wgpu-matrix";
 const gpuManager = GPUManager.getInstance();
 await gpuManager.init();
 const canvas = gpuManager.canvas as HTMLCanvasElement;
-const inputHandler = createInputHandler(window, canvas);
 
 const camera = new Camera(vec3.create(3, 2, 5));
 camera.aspect = canvas.width / canvas.height;
@@ -32,7 +30,7 @@ const render = () => {
   const deltaTime = (now - lastFrameMS) / 1000;
   lastFrameMS = now;
 
-  scene.render(camera, deltaTime, inputHandler);
+  scene.render(camera, deltaTime);
   requestAnimationFrame(render);
 };
 requestAnimationFrame(render);

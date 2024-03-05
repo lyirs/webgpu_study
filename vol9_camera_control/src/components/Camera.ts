@@ -1,6 +1,6 @@
 import { mat4, Mat4, Vec3, vec3, Vec4 } from "wgpu-matrix";
 import { GPUManager } from "./GPUManager";
-import Input from "./Input";
+import { Input } from "./InputManager";
 
 interface CameraInterface {
   update(deltaTime: number, input: Input): Mat4;
@@ -82,11 +82,11 @@ export class CameraBase {
 
 export class Camera extends CameraBase implements CameraInterface {
   private distance = 0;
-  private angularVelocity = 0;
-  private _axis = vec3.create();
-  public rotationSpeed = 1;
-  public zoomSpeed = 0.1;
-  public frictionCoefficient = 0.999;
+  private angularVelocity = 0; // 摄像机围绕某个轴的旋转角速度
+  private _axis = vec3.create(); // 摄像机旋转的轴向量
+  public rotationSpeed = 1; // 旋转速度的系数
+  public zoomSpeed = 0.1; // 缩放速度的系数
+  public frictionCoefficient = 0.999; // 控制旋转时的摩擦系数，用于实现旋转的自然停止
 
   constructor(position?: Vec3) {
     super();
@@ -119,15 +119,16 @@ export class Camera extends CameraBase implements CameraInterface {
   update(deltaTime: number, input: Input): Mat4 {
     const epsilon = 0.00000001;
 
+    // 用户正在拖动时，停止任何旋转动作。
     if (input.analog.touching) {
-      // Currently being dragged.
       this.angularVelocity = 0;
     } else {
-      // Dampen any existing angular velocity
+      // 使用摩擦系数逐渐减缓旋转速度
       this.angularVelocity *= Math.pow(1 - this.frictionCoefficient, deltaTime);
     }
 
     const movement = vec3.create();
+    // 根据用户输入计算旋转轴和角速度
     vec3.addScaled(movement, this.right, input.analog.x, movement);
     vec3.addScaled(movement, this.up, -input.analog.y, movement);
 
@@ -140,12 +141,14 @@ export class Camera extends CameraBase implements CameraInterface {
     }
 
     const rotationAngle = this.angularVelocity * deltaTime;
+    // 如果计算出的旋转角度足够大，根据这个角度和轴向量旋转back向量，然后重新计算right和up向量。
     if (rotationAngle > epsilon) {
       this.back = vec3.normalize(rotate(this.back, this.axis, rotationAngle));
       this.recalcuateRight();
       this.recalcuateUp();
     }
 
+    // 处理用户的缩放输入，更新摄像机与观察点的距离
     if (input.analog.zoom !== 0) {
       this.distance *= 1 + input.analog.zoom * this.zoomSpeed;
     }
