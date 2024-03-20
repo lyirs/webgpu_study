@@ -1,9 +1,6 @@
-import { ArcballCamera } from "arcball_camera";
-import { Controller } from "ez_canvas_controller";
-import { mat4, vec3 } from "wgpu-matrix";
-
 /// <reference types="@webgpu/types" />
 /// <reference types="vite/client" />
+import { mat4, vec3 } from "wgpu-matrix";
 import "./style.css";
 import { uploadGLBModel } from "./tools/glb_import";
 import { GLBShaderCache } from "./tools/glb_shader_cache";
@@ -74,53 +71,31 @@ const renderBundles = glbFile!.buildRenderBundles(
   swapChainFormat
 );
 
-const defaultEye = vec3.set(0.0, 0.0, 5.0);
+const defaultEye = vec3.set(0.0, 0.0, 1.0);
 const center = vec3.set(0.0, 0.0, 0.0);
 const up = vec3.set(0.0, 1.0, 0.0);
-const camera = new ArcballCamera(defaultEye, center, up, 2, [
-  canvas.width,
-  canvas.height,
-]);
-var proj = mat4.perspective(
-  (50 * Math.PI) / 180.0,
-  canvas.width / canvas.height,
-  0.1,
-  1000
-);
-var projView = mat4.identity();
-
-var controller = new Controller();
-controller.mousemove = function (prev, cur, evt) {
-  if (evt.buttons == 1) {
-    camera.rotate(prev, cur);
-  } else if (evt.buttons == 2) {
-    camera.pan([cur[0] - prev[0], prev[1] - cur[1]]);
-  }
-};
-controller.wheel = function (amt) {
-  camera.zoom(amt * 0.5);
-};
-controller.pinch = controller.wheel;
-controller.twoFingerDrag = function (drag) {
-  camera.pan(drag);
-};
-controller.registerForCanvas(canvas);
+const aspect = canvas.width / canvas.height; // 相机宽高比例
+const projectionMatrix = mat4.identity();
+mat4.perspective((45 * Math.PI) / 180, aspect, 0.1, 100.0, projectionMatrix);
 
 // 渲染
 const render = () => {
   let commandEncoder = device.createCommandEncoder();
 
-  projView = mat4.mul(proj, camera.camera);
+  const viewMatrix = mat4.identity();
+  mat4.translate(viewMatrix, vec3.fromValues(10, 10, 10), viewMatrix);
+  const modelViewProjectionMatrix = mat4.identity() as Float32Array;
+  mat4.multiply(projectionMatrix, viewMatrix, modelViewProjectionMatrix);
+
   let upload = device.createBuffer({
     size: 4 * 4 * 4,
     usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
     mappedAtCreation: true,
   });
-  new Float32Array(upload.getMappedRange()).set(projView);
+  new Float32Array(upload.getMappedRange()).set(modelViewProjectionMatrix);
   upload.unmap();
 
   commandEncoder.copyBufferToBuffer(upload, 0, viewParamBuf, 0, 4 * 4 * 4);
-
   let renderPass = commandEncoder.beginRenderPass({
     colorAttachments: [
       {
