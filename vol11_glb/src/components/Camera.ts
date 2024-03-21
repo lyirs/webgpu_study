@@ -27,7 +27,7 @@ export class CameraBase {
   }
 
   get projectionMatrix(): Mat4 {
-    return mat4.perspective((2 * Math.PI) / 5, this._aspect, 1, 100.0);
+    return mat4.perspective((50 * Math.PI) / 180.0, this._aspect, 0.1, 1000.0);
   }
 
   get matrix() {

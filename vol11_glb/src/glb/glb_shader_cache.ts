@@ -1,4 +1,5 @@
-import { GLTFAccessor, GLTFTexture } from "./glb_import";
+import { GLTFAccessor } from "./glb_accessor";
+import { GLTFTexture } from "./glb_texture";
 
 export class GLBShaderCache {
   device: GPUDevice;
@@ -42,36 +43,30 @@ const generateGLTFShader = (
   hasUVs: boolean,
   hasColorTexture: GLTFTexture
 ): string => {
-  let typeDefs = `
-alias float2 = vec2<f32>;
-alias float3 = vec3<f32>;
-alias float4 = vec4<f32>;
-`;
-
   let vertexInputStruct = `
 struct VertexInput {
-    @location(0) position: float3,
+    @location(0) position: vec3<f32>,
 `;
 
   let vertexOutputStruct = `
 struct VertexOutput {
-    @builtin(position) position: float4,
+    @builtin(position) position: vec4<f32>,
 `;
 
   if (hasNormals) {
     vertexInputStruct += `
-    @location(1) normal: float3,
+    @location(1) normal: vec3<f32>,
     `;
     vertexOutputStruct += `
-    @location(1) normal: float3,
+    @location(1) normal: vec3<f32>,
     `;
   }
   if (hasUVs) {
     vertexInputStruct += `
-    @location(2) uv: float2,
+    @location(2) uv: vec2<f32>,
     `;
     vertexOutputStruct += `
-    @location(2) uv: float2,
+    @location(2) uv: vec2<f32>,
     `;
   }
   vertexInputStruct += "};";
@@ -95,29 +90,29 @@ var<uniform> node_transform: Mat4Uniform;
     `
 @vertex
 fn vertex_main(vin: VertexInput) -> VertexOutput {
-    var vout: VertexOutput;
-    vout.position = view_proj.m * node_transform.m * float4(vin.position, 1.0);
+    var out: VertexOutput;
+    out.position = view_proj.m * node_transform.m * vec4<f32>(vin.position, 1.0);
 `;
   if (hasNormals) {
     vertexStage += `
-    vout.normal = vin.normal;
+    out.normal = vin.normal;
     `;
   }
   if (hasUVs) {
     vertexStage += `
-    vout.uv = vin.uv;
+    out.uv = vin.uv;
     `;
   }
   vertexStage += `
-    return vout;
+    return out;
 }`;
 
   let fragmentParams = `
 struct MaterialParams {
-    base_color_factor: float4,
-    emissive_factor: float4,
-    metallic_factor: f32,
-    roughness_factor: f32,
+    base_color_factor: vec4<f32>,  // 基色
+    emissive_factor: vec4<f32>,  // 自发光 
+    metallic_factor: f32,  // 金属度
+    roughness_factor: f32,  // 粗糙度
 };
 
 @group(2) @binding(0)
@@ -144,20 +139,22 @@ fn linear_to_srgb(x: f32) -> f32 {
 }
 
 @fragment
-fn fragment_main(fin: VertexOutput) -> @location(0) float4 {
-    var color = float4(material.base_color_factor.xyz, 1.0);
+fn fragment_main(fin: VertexOutput) -> @location(0) vec4<f32> {
+    var color = vec4<f32>(material.base_color_factor.xyz, 1.0);
 `;
 
+  // 应用基础颜色并根据需要与纹理颜色混合
   if (hasUVs && hasColorTexture) {
     fragmentStage += `
     var texture_color = textureSample(base_color_texture, base_color_sampler, fin.uv);
     if (texture_color.a < 0.001) {
         discard;
     }
-    color = float4(material.base_color_factor.xyz * texture_color.xyz, 1.0);
+    color = vec4<f32>(material.base_color_factor.xyz * texture_color.xyz, 1.0);
     `;
   }
 
+  // 将颜色从线性空间转换到sRGB空间
   fragmentStage += `
     color.x = linear_to_srgb(color.x);
     color.y = linear_to_srgb(color.y);
@@ -167,5 +164,5 @@ fn fragment_main(fin: VertexOutput) -> @location(0) float4 {
 }
 `;
 
-  return typeDefs + vertexStage + fragmentStage;
+  return vertexStage + fragmentStage;
 };

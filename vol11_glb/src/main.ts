@@ -1,9 +1,12 @@
+import { mat4, vec3 } from "wgpu-matrix";
+import { Camera } from "./components/Camera";
+import InputManager from "./components/InputManager";
+
 /// <reference types="@webgpu/types" />
 /// <reference types="vite/client" />
-import { mat4, vec3 } from "wgpu-matrix";
 import "./style.css";
-import { uploadGLBModel } from "./tools/glb_import";
-import { GLBShaderCache } from "./tools/glb_shader_cache";
+import { uploadGLBModel } from "./glb/glb_main";
+import { GLBShaderCache } from "./glb/glb_shader_cache";
 // 创建canvas
 const canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
@@ -71,31 +74,31 @@ const renderBundles = glbFile!.buildRenderBundles(
   swapChainFormat
 );
 
-const defaultEye = vec3.set(0.0, 0.0, 1.0);
-const center = vec3.set(0.0, 0.0, 0.0);
-const up = vec3.set(0.0, 1.0, 0.0);
-const aspect = canvas.width / canvas.height; // 相机宽高比例
-const projectionMatrix = mat4.identity();
-mat4.perspective((45 * Math.PI) / 180, aspect, 0.1, 100.0, projectionMatrix);
-
+const inputManager = InputManager.getInstance(canvas);
+const camera = new Camera(vec3.create(0, 0, 5));
+camera.aspect = canvas.width / canvas.height;
 // 渲染
+let lastFrameMS = Date.now();
 const render = () => {
+  const now = Date.now();
+  const deltaTime = (now - lastFrameMS) / 1000;
+  lastFrameMS = now;
   let commandEncoder = device.createCommandEncoder();
 
-  const viewMatrix = mat4.identity();
-  mat4.translate(viewMatrix, vec3.fromValues(10, 10, 10), viewMatrix);
-  const modelViewProjectionMatrix = mat4.identity() as Float32Array;
-  mat4.multiply(projectionMatrix, viewMatrix, modelViewProjectionMatrix);
-
+  let projView = mat4.multiply(
+    camera.projectionMatrix,
+    camera.update(deltaTime, inputManager.getInput())
+  );
   let upload = device.createBuffer({
     size: 4 * 4 * 4,
     usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
     mappedAtCreation: true,
   });
-  new Float32Array(upload.getMappedRange()).set(modelViewProjectionMatrix);
+  new Float32Array(upload.getMappedRange()).set(projView);
   upload.unmap();
 
   commandEncoder.copyBufferToBuffer(upload, 0, viewParamBuf, 0, 4 * 4 * 4);
+
   let renderPass = commandEncoder.beginRenderPass({
     colorAttachments: [
       {

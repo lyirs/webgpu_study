@@ -45,6 +45,7 @@
 | vol9_camera_control_simple          | 简易相机控制器                                                      |
 | vol9_camera_control                 | 相机控制器                                                          |
 | vol10_renderBundles                 | 命令束 RenderBundle                                                 |
+| vol11_glb                           | 简易 glb 模型导入                                                   |
 | proj1_gameOfLife                    | 生命游戏                                                            |
 | proj2_firework                      | 简易烟花 与 wgsl 中内存地址对齐说明                                 |
 | proj3_imageBlur                     | 简易图像均值模糊                                                    |
