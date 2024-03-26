@@ -115,14 +115,14 @@ export class GLTFPrimitive {
       0,
       this.positions.view.gpuBuffer,
       this.positions.byteOffset,
-      this.positions.length
+      this.positions.byteLength
     );
     if (this.normals) {
       bundleEncoder.setVertexBuffer(
         1,
         this.normals.view.gpuBuffer,
         this.normals.byteOffset,
-        this.normals.length
+        this.normals.byteLength
       );
     }
     if (this.texcoords.length > 0) {
@@ -130,7 +130,7 @@ export class GLTFPrimitive {
         2,
         this.texcoords[0].view.gpuBuffer,
         this.texcoords[0].byteOffset,
-        this.texcoords[0].length
+        this.texcoords[0].byteLength
       );
     }
     if (this.indices) {
@@ -142,7 +142,7 @@ export class GLTFPrimitive {
         this.indices.view.gpuBuffer!,
         indexFormat,
         this.indices.byteOffset,
-        this.indices.length
+        this.indices.byteLength
       );
       bundleEncoder.drawIndexed(this.indices.count);
     } else {

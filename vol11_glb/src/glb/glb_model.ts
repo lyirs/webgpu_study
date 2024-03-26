@@ -12,7 +12,8 @@ export class GLBModel {
     shaderCache: GLBShaderCache,
     viewParamsLayout: GPUBindGroupLayout,
     viewParamsBindGroup: GPUBindGroup | null,
-    swapChainFormat: GPUTextureFormat
+    swapChainFormat: GPUTextureFormat,
+    depthFormat: GPUTextureFormat
   ) {
     let renderBundles = [];
     for (let i = 0; i < this.nodes.length; ++i) {
@@ -23,7 +24,7 @@ export class GLBModel {
         viewParamsLayout,
         viewParamsBindGroup,
         swapChainFormat,
-        "depth24plus-stencil8"
+        depthFormat
       );
       renderBundles.push(bundle);
     }

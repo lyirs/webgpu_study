@@ -4,13 +4,12 @@ import { GLTFBufferView } from "./glb_viewbuffer";
 // 访问GLB文件中的顶点、索引等数据。
 export class GLTFAccessor {
   count: number;
-  componentType: number;
+  componentType: GLTFComponentType;
   gltfType: string;
   numComponents: number;
   numScalars: number;
   view: GLTFBufferView;
   byteOffset: number;
-  length: number | undefined;
   constructor(view: GLTFBufferView, accessor: IAccessor) {
     this.count = accessor.count;
     this.componentType = accessor.componentType;
@@ -27,5 +26,9 @@ export class GLTFAccessor {
   get byteStride() {
     let elementSize = gltfTypeSize(this.componentType, this.gltfType);
     return Math.max(elementSize, this.view.byteStride);
+  }
+
+  get byteLength() {
+    return this.count * this.byteStride;
   }
 }

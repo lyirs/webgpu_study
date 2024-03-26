@@ -32,15 +32,16 @@ context.configure({
 });
 
 // 读取glb文件
-const glbURL = "/DamagedHelmet.glb";
+const glbURL = "/Buggy.glb";
 const glbFile = await fetch(glbURL)
   .then((response) => response.arrayBuffer())
   .then((arrayBuffer) => uploadGLBModel(arrayBuffer, device));
 if (glbFile == undefined) alert("File not found");
 
+const depthFormat = "depth24plus-stencil8" as GPUTextureFormat;
 const depthTexture = device.createTexture({
   size: [canvas.width, canvas.height, 1],
-  format: "depth24plus-stencil8",
+  format: depthFormat,
   usage: GPUTextureUsage.RENDER_ATTACHMENT,
 });
 
@@ -71,11 +72,12 @@ const renderBundles = glbFile!.buildRenderBundles(
   shaderCache,
   viewParamsLayout,
   viewParamsBindGroup,
-  swapChainFormat
+  swapChainFormat,
+  depthFormat
 );
 
 const inputManager = InputManager.getInstance(canvas);
-const camera = new Camera(vec3.create(0, 0, 5));
+const camera = new Camera(vec3.create(0, 0, 200));
 camera.aspect = canvas.width / canvas.height;
 // 渲染
 let lastFrameMS = Date.now();
